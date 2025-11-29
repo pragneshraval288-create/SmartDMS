@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}About · DMS{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="card p-4 mb-4">
+    <h4 class="fw-semibold">About Document Management System</h4>
+    <p class="text-muted">This Document Management System is built using Python Flask. It helps users upload, search, tag and manage document versions securely.</p>
+  </div>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card p-4 h-100">
+        <h6 class="fw-semibold mb-2">Key Features</h6>
+        <ul class="text-muted small m-0">
+          <li>Secure Document Upload</li>
+          <li>Tag Based Search & Filtering</li>
+          <li>Version Management</li>
+          <li>Role Based Access Control</li>
+          <li>Audit Trail (Activity Tracking)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-4 h-100">
+        <h6 class="fw-semibold mb-2">Technology Stack</h6>
+        <ul class="text-muted small m-0">
+          <li>Python Flask Framework</li>
+          <li>Bootstrap 5 Frontend</li>
+          <li>SQLAlchemy ORM</li>
+          <li>Jinja Template Engine</li>
+          <li>SQLite Database</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

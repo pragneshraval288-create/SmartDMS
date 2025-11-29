@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}User Management · SmartDMS{% endblock %}
+
+{% block content %}
+
+<style>
+  .card-modern {
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    background: #ffffff;
+  }
+  .table-modern tbody tr:hover {
+    background: rgba(13,110,253,0.04);
+    transition: 0.2s ease-in;
+  }
+  .btn-add {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 6px 14px;
+  }
+  .badge-role {
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 12px;
+  }
+</style>
+
+<div class="container-fluid px-2">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center align-items-start mb-4">
+    <div>
+      <h3 class="mb-1 fw-bold">User Management</h3>
+      <p class="text-muted m-0">View and manage all registered users</p>
+    </div>
+
+    <a href="{{ url_for('admin_users.create_user') }}" class="btn btn-primary btn-add mt-3 mt-md-0">
+      <i class="bi bi-person-plus me-2"></i>Add New User
+    </a>
+  </div>
+
+  <div class="card card-modern">
+    <div class="card-body">
+      {% if users and users|length > 0 %}
+      <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>Role</th>
+              <th class="text-end">Profile</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td class="fw-semibold">{{ u.username }}</td>
+              <td>{{ u.full_name or '-' }}</td>
+              <td>{{ u.email or '-' }}</td>
+              <td>{{ u.mobile or '-' }}</td>
+              <td>
+                {% if u.role == 'admin' %}
+                  <span class="badge bg-danger text-white badge-role">Admin</span>
+                {% else %}
+                  <span class="badge bg-secondary text-white badge-role">User</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <!-- ✅ FIXED: correct endpoint name -->
+                <a href="{{ url_for('profile.profile_view', user_id=u.id) }}"
+                   class="btn btn-sm btn-outline-primary btn-add">
+                  <i class="bi bi-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="mb-0 text-muted">No users found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

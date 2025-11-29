@@ -1,0 +1,227 @@
+/* 🌐 Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: linear-gradient(to bottom right, #e3f2fd, #ffffff);
+  color: #1e3a8a;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🌟 Navbar */
+nav {
+  background: linear-gradient(90deg, #1e40af, #2563eb);
+  color: #fff;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+  color: #ffffff;
+  margin-left: 20px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: #cbd5e1;
+}
+
+/* 📦 Main Container */
+.container {
+  flex: 1;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 💡 Flash Messages */
+.flash {
+  padding: 12px 18px;
+  margin: 10px 0;
+  border-radius: 8px;
+  font-weight: 500;
+  width: 100%;
+  max-width: 700px;
+  animation: fadeIn 0.5s ease;
+}
+.flash.success { background: #d1fae5; color: #065f46; border-left: 6px solid #10b981; }
+.flash.danger { background: #fee2e2; color: #991b1b; border-left: 6px solid #ef4444; }
+.flash.info { background: #dbeafe; color: #1e3a8a; border-left: 6px solid #3b82f6; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 🧩 Buttons */
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-warning { background: #f59e0b; color: #fff; }
+.btn-danger { background: #ef4444; color: #fff; }
+.btn-success { background: #16a34a; color: #fff; }
+
+.btn:hover { transform: scale(1.03); opacity: 0.95; }
+
+/* 📄 Common Form Style */
+form {
+  background: #ffffff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 400px;
+}
+form input, form select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 4px #93c5fd;
+}
+
+/* --- Register Page Styles --- */
+.register-container, .login-container, .upload-container, .auth-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  background: linear-gradient(135deg, #e8f1ff, #ffffff);
+}
+
+.register-card, .login-card, .upload-card, .auth-card {
+  background: #ffffff;
+  padding: 40px 50px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  max-width: 90%;
+}
+
+.register-title, .login-title, .upload-title, .page-title {
+  text-align: center;
+  color: #1a73e8;
+  margin-bottom: 25px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+}
+
+.form-group {
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.form-input, .input-field, .form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.form-input:focus, .input-field:focus, .form-control:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 5px rgba(26, 115, 232, 0.4);
+}
+
+.btn-primary, .btn-upload, .btn-reset {
+  background-color: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover, .btn-upload:hover, .btn-reset:hover {
+  background-color: #155cc1;
+}
+
+/* --- Reset Password Page Specific --- */
+.auth-card {
+  text-align: center;
+}
+
+.subtitle {
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.bottom-links {
+  margin-top: 20px;
+}
+
+.link {
+  display: inline-block;
+  color: #1a73e8;
+  font-weight: 500;
+  text-decoration: none;
+  margin: 6px 8px;
+  transition: 0.3s;
+}
+
+.link:hover {
+  color: #155cc1;
+  text-decoration: underline;
+}
+
+/* 🔻 Footer */
+footer {
+  background: #1e3a8a;
+  color: #e0e7ff;
+  text-align: center;
+  padding: 12px;
+  font-size: 0.9em;
+  margin-top: auto;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  nav a {
+    margin: 8px 0;
+  }
+}

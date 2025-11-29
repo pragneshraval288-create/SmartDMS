@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Activity Logs · SmartDMS{% endblock %}
+
+{% block content %}
+
+<div class="container" style="max-width:900px;">
+  <div class="card shadow-sm p-4">
+
+    <h4 class="fw-bold mb-3">
+      <i class="bi bi-clock-history me-2"></i> Activity Logs
+    </h4>
+
+    {% if docs %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Filename</th>
+            <th>Uploaded On</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in docs %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td class="fw-semibold">{{ doc.title }}</td>
+            <td>{{ doc.filename }}</td>
+            <td>
+              {% if doc.upload_date %}
+                {{ doc.upload_date.strftime('%d %b %Y %H:%M') }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('history.show', doc_id=doc.id) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-clock-history"></i> Versions
+              </a>
+              <a href="{{ url_for('documents.preview', doc_id=doc.id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-download"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <p class="text-muted text-center py-3">
+      No documents found in your activity history.
+    </p>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

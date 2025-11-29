@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}
+  {{ 'Create User' if mode == 'create' else 'Edit User' }} · SmartDMS
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .card-soft {
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    background: linear-gradient(145deg, #ffffff, #fafafa);
+    padding: 20px;
+  }
+  .form-control, .form-select {
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .btn-modern {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 8px 16px;
+    transition: 0.3s;
+  }
+  .btn-modern:hover {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+  .page-heading {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary, #2563eb);
+  }
+</style>
+
+<div class="container-fluid px-2">
+  <div class="mb-4">
+    <h3 class="page-heading">
+      {% if mode == 'create' %}Create New User{% else %}Edit User{% endif %}
+    </h3>
+    <p class="text-muted m-0">
+      {% if mode == 'create' %}
+        Create a new account and assign a role
+      {% else %}
+        Update user details and role
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="card-soft">
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Username</label>
+          {{ form.username(class="form-control", placeholder="Enter username") }}
+          {% for err in form.username.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Full Name</label>
+          {{ form.full_name(class="form-control", placeholder="Enter full name") }}
+          {% for err in form.full_name.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Email</label>
+          {{ form.email(class="form-control", placeholder="Enter email (optional)") }}
+          {% for err in form.email.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Mobile</label>
+          {{ form.mobile(class="form-control", placeholder="Enter mobile number (optional)") }}
+          {% for err in form.mobile.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Date of Birth</label>
+          {{ form.dob(class="form-control", placeholder="YYYY-MM-DD (optional)") }}
+          {% for err in form.dob.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Role</label>
+          {{ form.role(class="form-select") }}
+          {% for err in form.role.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Password</label>
+          {{ form.password(class="form-control", placeholder="Set password") }}
+          {% for err in form.password.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Confirm Password</label>
+          {{ form.confirm_password(class="form-control", placeholder="Confirm password") }}
+          {% for err in form.confirm_password.errors %}
+            <div class="text-danger small">{{ err }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- ✅ Buttons -->
+      <div class="mt-4 d-flex justify-content-between">
+        <a href="{{ url_for('admin_users.list_users') }}" class="btn btn-outline-secondary btn-modern">Cancel</a>
+        <button type="submit" class="btn btn-primary btn-modern">
+          <i class="bi bi-check-lg me-1"></i>
+          {% if mode == 'create' %}Create User{% else %}Save Changes{% endif %}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.py[pdo]
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+.venv*/
+env/
+ENV/
+
+# Instance & Database (SQLite)
+instance/
+*.db
+*.sqlite3
+
+# Upload folders (Never commit user data)
+backend/uploads/
+instance/uploads/
+instance/uploads/documents/
+instance/uploads/profile_pics/
+
+# Environment & Secrets (Important!)
+.env
+.env.*
+config.env
+secrets.env
+
+# Logs (avoid heavy/ever-growing files)
+*.log
+logs/
+log.txt
+backend.log
+access.log
+error.log
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp

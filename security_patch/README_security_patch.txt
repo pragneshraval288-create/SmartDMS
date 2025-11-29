@@ -1,0 +1,1 @@
+SmartDMS ek team-ready Flask factory based DMS system hai jisme passwords hashed, login rate-limited, uploader identity stored, files versioned (`*_v1`,`*_v2`) to avoid overwrite, uploads instance folder me safe stored, and actions fully audited for accountability.
