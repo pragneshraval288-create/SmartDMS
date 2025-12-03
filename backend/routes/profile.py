@@ -83,7 +83,7 @@ def profile_edit(user_id):
 
     form = ProfileForm(obj=target_user)
 
-    # 🔹 FIX: agar DB me dob string hai to DateField ke liye date object me convert karo
+    #  FIX: agar DB me dob string hai to DateField ke liye date object me convert karo
     if request.method == "GET":
         if isinstance(target_user.dob, str) and target_user.dob:
             try:
@@ -97,7 +97,7 @@ def profile_edit(user_id):
         target_user.email = (form.email.data or "").strip().lower() or None
         target_user.mobile = (form.mobile.data or "").strip() or None
 
-        # 🔹 DOB ko DB me string ke roop me store kar rahe hain (safe for templates)
+        #  DOB ko DB me string ke roop me store kar rahe hain (safe for templates)
         if form.dob.data:
             target_user.dob = form.dob.data.strftime("%Y-%m-%d")
         else:

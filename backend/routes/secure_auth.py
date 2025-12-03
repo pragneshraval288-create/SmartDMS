@@ -19,7 +19,7 @@ login_manager.login_message_category = "warning"
 def load_user(uid):
     return User.query.get(int(uid))
 
-# ✅ REGISTER ROUTE
+#  REGISTER ROUTE
 @bp.route('/register', methods=['GET','POST'])
 @limiter.limit("10 per hour")
 def register():
@@ -31,7 +31,7 @@ def register():
             flash('Username already exists', 'danger')
             return render_template('register.html', form=form)
 
-        # ✅ Password validation
+        #  Password validation
         ok, msg = validate_password(form.password.data)
         if not ok:
             flash(msg, 'danger')
@@ -50,7 +50,7 @@ def register():
     return render_template('register.html', form=form)
 
 
-# ✅ LOGIN ROUTE
+#  LOGIN ROUTE
 @bp.route('/login', methods=['GET','POST'])
 @limiter.limit("5 per minute")
 def login():
@@ -63,14 +63,14 @@ def login():
             login_user(user)
             flash('Logged in successfully.', 'success')
 
-            # ✅ Handle `next=` param securely
+            #  Handle `next=` param securely
             next_url = request.args.get("next")
             if next_url:
                 parsed = urlparse(next_url)
                 if parsed.netloc == "" and not parsed.path.startswith("/register"):
                     return redirect(next_url)
 
-            # ✅ Finally redirect to Dashboard
+            #  Finally redirect to Dashboard
             return redirect(url_for("dashboard.home"))
 
         else:
@@ -80,7 +80,7 @@ def login():
     return render_template('login.html', form=form)
 
 
-# ✅ LOGOUT ROUTE ✔
+#  LOGOUT ROUTE ✔
 @bp.route('/logout')
 @login_required
 def logout():
@@ -89,7 +89,7 @@ def logout():
     return redirect(url_for("auth.login"))
 
 
-# ✅ RESET PASSWORD ROUTE ✔
+#  RESET PASSWORD ROUTE ✔
 @bp.route('/reset-password', methods=['GET','POST'])
 @limiter.exempt
 def reset_password():
@@ -114,7 +114,7 @@ def reset_password():
     return render_template("reset_password.html", form=form)
 
 
-# ✅ UNAUTHORIZED HANDLER (fixed — Register/other page me leak नहीं होगा)
+#  UNAUTHORIZED HANDLER (fixed — Register/other page me leak नहीं होगा)
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     flash("Please log in to access this page.", "warning")

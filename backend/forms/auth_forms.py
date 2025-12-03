@@ -9,11 +9,11 @@ from wtforms.validators import (
 )
 from backend.models.models import User
 
-# ✅ Mobile validation regex (10–15 digit)
+#  Mobile validation regex (10–15 digit)
 phone_regex = r'^\+?\d{10,15}$'
 
 
-# ✅ LOGIN FORM
+#  LOGIN FORM
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[
         DataRequired(), Length(3, 150)
@@ -24,7 +24,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-# ✅ REGISTER FORM (admin + public)
+#  REGISTER FORM (admin + public)
 class RegisterForm(FlaskForm):
     full_name = StringField('Full Name', validators=[
         DataRequired(), Length(min=2, max=150)
@@ -61,17 +61,17 @@ class RegisterForm(FlaskForm):
 
     submit = SubmitField('Register')
 
-    # ✅ Username must be unique
+    #  Username must be unique
     def validate_username(self, field):
         if User.query.filter_by(username=field.data).first():
             raise ValidationError("Username already taken.")
 
-    # ✅ Email must be unique
+    #  Email must be unique
     def validate_email(self, field):
         if User.query.filter_by(email=field.data.lower()).first():
             raise ValidationError("Email already registered.")
 
-    # ✅ Mobile must be unique (if provided)
+    #  Mobile must be unique (if provided)
     def validate_mobile(self, field):
         if field.data:
             if User.query.filter_by(mobile=field.data).first():
@@ -79,7 +79,7 @@ class RegisterForm(FlaskForm):
 
 
 
-# ✅ RESET PASSWORD FORM (verified reset using username + email + mobile)
+#  RESET PASSWORD FORM (verified reset using username + email + mobile)
 class ResetPasswordForm(FlaskForm):
     username = StringField('Username', validators=[
         DataRequired(), Length(3, 150)
@@ -103,7 +103,7 @@ class ResetPasswordForm(FlaskForm):
 
     submit = SubmitField('Reset Password')
 
-    # ✅ Check if user exists with same username + email + mobile
+    #  Check if user exists with same username + email + mobile
     def validate_username(self, field):
         user = User.query.filter_by(username=field.data).first()
         if not user:

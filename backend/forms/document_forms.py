@@ -18,7 +18,7 @@ class DocumentForm(FlaskForm):
 
     submit = SubmitField('Submit')
 
-    # ✅ Stable file validation implemented
+    #  Stable file validation implemented
     def validate_file(self, field):
         if field.data:
             filename = field.data.filename

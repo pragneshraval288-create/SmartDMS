@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 from backend.extensions import db
 from backend.models.models import User
-from backend.forms.auth_forms import RegisterForm  # ✅ Use this for user creation
+from backend.forms.auth_forms import RegisterForm  #  Use this for user creation
 from backend.security_helpers import validate_password
 from backend.utils.permissions import admin_required
 
@@ -24,7 +24,7 @@ def list_users():
 @admin_required
 def create_user():
 
-    form = RegisterForm()  # ✅ RegisterForm stable hai (isme username, role सब hai)
+    form = RegisterForm()  #  RegisterForm stable hai (isme username, role सब hai)
 
     if form.validate_on_submit():
         username = form.username.data.strip()
@@ -32,7 +32,7 @@ def create_user():
         mobile = (form.mobile.data or "").strip() or None
         role = form.role.data or "user"
 
-        # ✅ Unique validation
+        #  Unique validation
         if User.query.filter(User.username.ilike(username)).first():
             flash("Username already exists!", "danger")
             return render_template("admin_user_form.html", form=form, mode="create")
@@ -45,13 +45,13 @@ def create_user():
             flash("Mobile number already exists!", "danger")
             return render_template("admin_user_form.html", form=form, mode="create")
 
-        # ✅ Password rule
+        #  Password rule
         ok, msg = validate_password(form.password.data)
         if not ok:
             flash(msg,"danger")
             return render_template("admin_user_form.html", form=form, mode="create")
 
-        # ✅ Create new user
+        #  Create new user
         user = User(
             username = username,
             full_name = form.full_name.data,
@@ -66,7 +66,7 @@ def create_user():
         db.session.commit()
 
 
-        flash("✅ User Created Successfully!", "success")
+        flash(" User Created Successfully!", "success")
         return redirect(url_for("admin_users.list_users"))
 
     return render_template("admin_user_form.html", form=form, mode="create")

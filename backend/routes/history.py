@@ -10,7 +10,7 @@ def _owns(doc: Document) -> bool:
     return (current_user.role == "admin") or (current_user.id == doc.uploader_id)
 
 
-# 📜 LIST DOCUMENTS (Admin: all, User: own)
+#  LIST DOCUMENTS (Admin: all, User: own)
 @bp.route("/history", methods=["GET"])
 @login_required
 def list():
@@ -27,7 +27,7 @@ def list():
     return render_template("history_list.html", docs=docs)
 
 
-# 📜 VERSION HISTORY
+#  VERSION HISTORY
 @bp.route("/history/<int:doc_id>", methods=["GET"])
 @login_required
 def show(doc_id):

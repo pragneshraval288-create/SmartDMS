@@ -4,21 +4,18 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from backend.extensions import db
+from backend.security_helpers import allowed_file, safe_filename
+from backend.utils.versioning import next_version_for_filename
 from backend.models.models import Document, Audit
 from backend.forms.document_forms import DocumentForm
 
 bp = Blueprint('documents', __name__)
 
-# ✅ File validation setup
-ALLOWED_EXTENSIONS = {'pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'xlsx'}
+#  File validation uses central helpers (backend.security_helpers)
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# ✅ Helper: Save uploaded file
 def save_file(file, version: int) -> str:
     """Save file with versioned, unique name like name_v1.pdf, name_v2.pdf, etc."""
-    original_name = secure_filename(file.filename)
+    original_name = safe_filename(file.filename)
     name, ext = os.path.splitext(original_name)
     upload_folder = current_app.config["UPLOAD_FOLDER"]
     os.makedirs(upload_folder, exist_ok=True)
@@ -27,28 +24,12 @@ def save_file(file, version: int) -> str:
     file.save(save_path)
     return filename
 
-# ✅ Helper: Get next version number for this filename (grouped by original name)
-def next_version_for_filename(filename: str) -> int:
-    """Return next version number based on existing stored filenames.
-
-    We derive base name and extension from the uploaded filename and then
-    look for stored filenames like "name_v1.ext", "name_v2.ext", etc.
-    """
-    original_name = secure_filename(filename)
-    base, ext = os.path.splitext(original_name)
-    pattern = f"{base}_v%{ext}"
-    latest = (
-        Document.query.filter(Document.filename.ilike(pattern))
-        .order_by(Document.version.desc())
-        .first()
-    )
-    return latest.version + 1 if latest else 1
-
-# ✅ Ownership check
+#  Helper: Get next version number for this filename (grouped by original name)
+#  Ownership check
 def _owns(doc):
     return (current_user.role == "admin") or (current_user.id == doc.uploader_id)
 
-# ✅ List documents
+#  List documents
 @bp.route('/documents')
 @login_required
 def list():
@@ -87,7 +68,7 @@ def list():
 
     return render_template("documents.html", documents=docs, page=page, total_pages=total_pages)
 
-# ✅ Upload documents
+#  Upload documents
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -99,7 +80,7 @@ def upload():
             flash("File type not allowed!", "danger")
             return redirect(request.url)
 
-        version = next_version_for_filename(file.filename)  # ✅ fixed version call
+        version = next_version_for_filename(file.filename)  #  fixed version call
         stored_filename = save_file(file, version)
 
         doc = Document(
@@ -131,7 +112,7 @@ def upload():
 
     return render_template("upload.html", form=form, edit_mode=True)
 
-# ✅ Preview
+#  Preview
 @bp.route('/preview/<int:doc_id>')
 @login_required
 def preview(doc_id):
@@ -142,7 +123,7 @@ def preview(doc_id):
 
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], doc.filename, as_attachment=False)
 
-# ✅ Download + audit
+#  Download + audit
 @bp.route('/download/<int:doc_id>')
 @login_required
 def download(doc_id):
@@ -164,7 +145,7 @@ def download(doc_id):
 
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], doc.filename, as_attachment=True)
 
-# ✅ Update metadata + optional new version
+#  Update metadata + optional new version
 @bp.route('/update/<int:doc_id>', methods=['GET', 'POST'])
 @login_required
 def update(doc_id):
@@ -223,11 +204,11 @@ def update(doc_id):
 
     return render_template("update_document.html", form=form, doc=original)
 
-# ✅ FIXED delete route
+#  FIXED delete route
 @bp.route('/delete/<int:doc_id>')
 @login_required
 def delete(doc_id):
-    doc = Document.query.get_or_404(doc_id)  # ✅ fixed
+    doc = Document.query.get_or_404(doc_id)  #  fixed
     if not _owns(doc):
         flash("Permission denied!", "danger")
         return redirect(url_for("documents.list"))

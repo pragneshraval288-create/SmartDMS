@@ -9,17 +9,17 @@ IST = timedelta(hours=5, minutes=30)
 
 @bp.route("/")
 @bp.route("/dashboard")
-@bp.route("/dashboard/")  # ✅ Trailing slash supported to avoid 404
+@bp.route("/dashboard/")  #  Trailing slash supported to avoid 404
 @login_required
 def home():
-    # ✅ Convert UTC to IST for UI feel
+    #  Convert UTC to IST for UI feel
     current_time = datetime.utcnow() + IST
     week_ago = current_time - timedelta(days=7)
 
-    # ✅ Weekly upload count
+    #  Weekly upload count
     week_uploads = Document.query.filter(Document.upload_date >= week_ago).count()
 
-    # ✅ Role based data
+    #  Role based data
     if current_user.role == "admin":
         total_docs = Document.query.count()
         recent_activity = Audit.query.order_by(Audit.timestamp.desc()).limit(40).all()

@@ -83,7 +83,7 @@ sudo ufw allow "Nginx Full"
 sudo ufw status
 ```
 
-## 🎉 Access
+##  Access
 ```
 https://yourdomain.com/dashboard
 https://yourdomain.com/documents

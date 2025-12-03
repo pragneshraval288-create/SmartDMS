@@ -25,10 +25,10 @@ def main():
         db.create_all()
 
     # Limiter storage explicit declare kar diya → warning bhi production-ready path ke sath
-    limiter.storage_uri = "memory://"
+    limiter.storage_uri = "memory://"   
 
-    # ✨ Sirf ek baar print karo
-    print("\n✅ Server started! Open browser → http://127.0.0.1:5000/\n")
+    #  Sirf ek baar print karo
+    print("\n Server started! Open browser → http://127.0.0.1:5000/\n")
 
     app.run(debug=False, host="127.0.0.1", port=5000)  # debug off = clean startup
 

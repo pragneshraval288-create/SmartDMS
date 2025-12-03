@@ -4,17 +4,20 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from backend.extensions import db, limiter, login_manager
+from backend.security_helpers import validate_password
 from backend.models.models import User
 from backend.forms.auth_forms import LoginForm, RegisterForm, ResetPasswordForm
 
 bp = Blueprint('auth', __name__)
 
+
 @login_manager.user_loader
 def load_user(uid):
     return User.query.get(int(uid))
 
-# ✅ LOGIN — Fixed redirect based on role + notifications login ke baad hi show hongi
-@bp.route('/login', methods=['GET','POST'])
+
+# LOGIN
+@bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("10 per minute")
 def login():
     form = LoginForm()
@@ -23,24 +26,23 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
 
         if user and check_password_hash(user.password_hash, form.password.data):
-            flash('Logged in successfully!', 'success')  # flash carried रहेगा
-            login_user(user, remember=form.remember.data if hasattr(form, 'remember') else True)
+            flash('Logged in successfully!', 'success')
+            login_user(user, remember=getattr(form, 'remember', True))
 
-            # ✅ FIX: Redirect according to role (Admin = admin dashboard, User = normal home)
+            # Role-based redirect
             if user.role == "admin":
-                return redirect(url_for("documents.list"))  # admin ke liye best stable landing
+                return redirect(url_for("documents.list"))
             else:
-                return redirect(url_for("dashboard.home"))  # normal user landing
+                return redirect(url_for("dashboard.home"))
 
-        # ❌ Wrong credentials → stay on same page to show error AFTER login page (reload)
         flash('Invalid credentials', 'danger')
         return redirect(url_for('auth.login'))
 
-    # First load (GET) → koi flash show nahi hogi (kyunki hum login page me flash remove करेंगे)
     return render_template('login.html', form=form)
 
-# ✅ REGISTER — Already ok, role save stable
-@bp.route('/register', methods=['GET','POST'])
+
+# REGISTER
+@bp.route('/register', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def register():
     form = RegisterForm()
@@ -57,13 +59,20 @@ def register():
             flash("Email already exists", "danger")
             return render_template("register.html", form=form)
 
+        # Password policy (same as admin-created users)
+        ok, msg = validate_password(form.password.data)
+        if not ok:
+            flash(msg, "danger")
+            return render_template("register.html", form=form)
+
+        # Create user
         user = User(
             username=form.username.data,
             full_name=form.full_name.data,
             email=form.email.data.lower(),
             mobile=form.mobile.data or None,
             dob=str(form.dob.data) if form.dob.data else None,
-            password_hash=generate_password_hash(form.password.data),  # ✅ Correct column
+            password_hash=generate_password_hash(form.password.data),
             role=selected_role
         )
 
@@ -74,7 +83,8 @@ def register():
 
     return render_template("register.html", form=form)
 
-# ✅ LOGOUT — unchanged stable
+
+# LOGOUT
 @bp.route('/logout')
 @login_required
 def logout():
@@ -82,8 +92,9 @@ def logout():
     logout_user()
     return redirect(url_for('auth.login'))
 
-# ✅ RESET PASSWORD — unchanged stable
-@bp.route('/reset-password', methods=['GET','POST'])
+
+# RESET PASSWORD
+@bp.route('/reset-password', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def reset_password():
     form = ResetPasswordForm()

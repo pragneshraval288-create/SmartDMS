@@ -11,35 +11,35 @@ from backend.extensions import db, login_manager, migrate, csrf, limiter
 
 
 def create_app():
-    # ✅ Flask app with correct template/static dirs
+    #  Flask app with correct template/static dirs
     app = Flask(
         __name__,
         template_folder=str(TEMPLATE_DIR),
-        static_folder=str(STATIC_DIR),
+        static_folder=str(STATIC_DIR),                                                     
     )
 
-    # ✅ Load config
+    #  Load config
     app.config.from_object(Config)
 
-    # ✅ Ensure upload folder exists
+    #  Ensure upload folder exists
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    # ✅ Init extensions
+    #  Init extensions
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
     limiter.init_app(app)
 
-    # ✅ Login redirect endpoint
+    #  Login redirect endpoint
     login_manager.login_view = "auth.login"
 
-    # ✅ current_user auto in templates
+    #  current_user auto in templates
     @app.context_processor
     def inject_user():
         return dict(current_user=current_user)
 
-    # ✅ Register blueprints
+    #  Register blueprints
     from backend.routes import auth, dashboard, documents, history, api, admin_users
     from backend.routes.profile import bp as profile_bp
 
@@ -51,7 +51,7 @@ def create_app():
     app.register_blueprint(profile_bp)
     app.register_blueprint(admin_users.bp)
 
-    # ✅ Security headers
+    #  Security headers
     @app.after_request
     def security_headers(resp):
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -60,13 +60,13 @@ def create_app():
         resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
         return resp
 
-    # ✅ Convenience route: /my-profile → correct profile view
+    #  Convenience route: /my-profile → correct profile view
     @app.route("/my-profile")
     @login_required
     def my_profile_redirect():
         return redirect(url_for("profile.profile_view"))
 
-    # ✅ Logging to file
+    #  Logging to file
     logging.basicConfig(
         filename="backend.log",
         level=logging.INFO,
@@ -86,13 +86,13 @@ def open_browser():
 def main():
     app = create_app()
 
-    # ✅ Auto-open browser after server starts
+    #  Auto-open browser after server starts
     threading.Timer(1.0, open_browser).start()
 
     with app.app_context():
         db.create_all()
 
-    # ✅ Fixed host/port
+    #  Fixed host/port
     app.run(debug=True, host="127.0.0.1", port=5000)
 
 

@@ -16,12 +16,12 @@ limiter = Limiter(
     default_limits=["200 per hour"]
 )
 
-# ✅ Login page redirect binding (Dashboard 404 ko fix karega)
+#  Login page redirect binding (Dashboard 404 ko fix karega)
 login_manager.login_view = "auth.login"
 login_manager.login_message = None
 login_manager.login_message_category = "warning"
 
-# ✅ Unauthorized notification login page me hi show hogi
+#  Unauthorized notification login page me hi show hogi
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     flash("Please log in to access this page.", "warning")

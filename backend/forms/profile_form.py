@@ -43,7 +43,7 @@ class ProfileForm(FlaskForm):
         validators=[Optional()],
     )
 
-    # 🔐 Password change section (used in template)
+    #  Password change section (used in template)
     current_password = PasswordField(
         "Current Password",
         validators=[Optional()],
