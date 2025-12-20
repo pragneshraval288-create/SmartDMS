@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - SmartDMS{% endblock %}
+
+{% block content %}
+
+<h1 class="h4 mb-4">Dashboard</h1>
+
+<!-- ===== TOP STATS ===== -->
+<div class="row g-3 mb-4">
+  <div class="col-auto">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="stat-label">Total Documents</div>
+        <div class="stat-value">{{ total_docs }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-auto">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="stat-label">Active</div>
+        <div class="stat-value text-success">{{ active_docs }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-auto">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="stat-label">Archived</div>
+        <div class="stat-value text-secondary">{{ archived_docs }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-auto">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="stat-label">Folders</div>
+        <div class="stat-value text-primary">{{ total_folders }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-auto">
+    <div class="card stat-card">
+      <div class="card-body">
+        <div class="stat-label">Uploads (7 days)</div>
+        <div class="stat-value">{{ uploads_week }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CHARTS ===== -->
+<div class="row g-3 mb-4">
+
+  <!-- Uploads Trend -->
+  <div class="col-lg-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Uploads trend (last 10 days)</h2>
+        <div style="height:180px;">
+          <canvas id="uploadsChart" data-labels='[
+              {% for d, c in uploads_per_day %}
+                "{{ d }}"{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ]' data-counts='[
+              {% for d, c in uploads_per_day %}
+                {{ c }}{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ]'>
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Type Distribution -->
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3">File type distribution</h2>
+        <div style="height:180px;">
+          <canvas id="typeChart" data-labels='[
+              {% for t, c in type_distribution %}
+                "{{ (t or "OTHER")|upper }}"{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ]' data-counts='[
+              {% for t, c in type_distribution %}
+                {{ c }}{% if not loop.last %},{% endif %}
+              {% endfor %}
+            ]'>
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== SYSTEM RESOURCES + RECENT FOLDERS ===== -->
+<div class="row g-3 mb-4">
+  <!-- System Resources -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-3">System Resources</h2>
+
+        <div class="row text-center">
+
+          <!-- CPU -->
+          <div class="col-4">
+            <canvas id="cpuChart" width="95" height="95" data-value="8">
+            </canvas>
+            <div class="mt-2 small fw-semibold">CPU</div>
+            <div class="text-muted small">
+              <span id="cpuValue">8</span>%
+            </div>
+          </div>
+
+          <!-- Memory -->
+          <div class="col-4">
+            <canvas id="memoryChart" width="95" height="95" data-value="38">
+            </canvas>
+            <div class="mt-2 small fw-semibold">Memory</div>
+            <div class="text-muted small">
+              <span id="memoryValue">38</span>%
+            </div>
+          </div>
+
+          <!-- Disk -->
+          <div class="col-4">
+            <canvas id="diskChart" width="95" height="95" data-value="5">
+            </canvas>
+            <div class="mt-2 small fw-semibold">Disk</div>
+            <div class="text-muted small">
+              <span id="diskValue">5</span>%
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RECENT FOLDERS (FIXED) ===== -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body d-flex flex-column">
+  
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h6 mb-0">Recent Folders</h2>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+            <i class="bi bi-folder-plus me-1"></i> Create
+          </button>
+        </div>
+  
+        <div class="flex-grow-1 overflow-auto" style="max-height: 260px;">
+          <ul class="list-group list-group-flush small">
+  
+            {% for folder in recent_folders %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+  
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-folder-fill text-primary"></i>
+                <a href="{{ url_for('document.list_documents', folder=folder.id) }}">
+                  {{ folder.name }}
+                </a>
+              </div>
+  
+              <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">
+                  {{ folder.created_at.strftime('%Y-%m-%d') }}
+                </span>
+  
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-light border-0" data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+  
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm" data-folder-menu="{{ folder.id }}">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('document.list_documents', folder=folder.id) }}">
+                        <i class="bi bi-folder2-open me-2"></i> Open
+                      </a>
+                    </li>
+  
+                    <li>
+                      <a class="dropdown-item" href="#" data-folder-id="{{ folder.id }}" data-folder-action="copy">
+                        <i class="bi bi-files me-2"></i> Copy
+                      </a>
+                    </li>
+  
+                    <li>
+                      <a class="dropdown-item" href="#" data-folder-id="{{ folder.id }}" data-folder-action="move">
+                        <i class="bi bi-arrows-move me-2"></i> Move
+                      </a>
+                    </li>
+
+                    <li>
+                      <a class="dropdown-item text-primary" href="#" data-folder-id="{{ folder.id }}" data-folder-action="paste">
+                        <i class="bi bi-clipboard-check me-2"></i> Paste here
+                      </a>
+                    </li>
+                    
+                    <li>
+                      <hr class="dropdown-divider">
+                    </li>
+  
+                    <li>
+                      <a class="dropdown-item" href="#" data-folder-id="{{ folder.id }}" data-folder-action="rename">
+                        <i class="bi bi-pencil me-2"></i> Rename
+                      </a>
+                    </li>
+  
+                    <li>
+                      <hr class="dropdown-divider">
+                    </li>
+  
+                    <li>
+                      <a class="dropdown-item text-danger" href="#" data-folder-id="{{ folder.id }}"
+                        data-folder-action="delete">
+                        <i class="bi bi-trash me-2"></i> Delete
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+  
+              </div>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted">
+              No folders created yet.
+            </li>
+            {% endfor %}
+  
+          </ul>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== ACTIVITY LOG ===== -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Activity Log</h2>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Time (IST)</th>
+                <th>Action</th>
+                <th>Document</th>
+                <th>User</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in recent_activities %}
+              <tr>
+                <td class="text-muted small">
+                  {% if log.ist_time %}
+                  {{ log.ist_time.strftime('%Y-%m-%d %H:%M') }}
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge bg-primary">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td>-</td>
+                <td>{{ log.user_id if log.user_id else '-' }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">
+                  No activity yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CREATE FOLDER MODAL ===== -->
+<div class="modal fade" id="createFolderModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('folder.create_folder') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Create Folder</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" name="name" class="form-control" placeholder="Folder name" required>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary w-100">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

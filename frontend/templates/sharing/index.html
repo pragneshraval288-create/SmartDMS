@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Shared Documents - SmartDMS{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-4">Shared Documents</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            Documents that are shared with you or shared by you.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Shared With</th>
+                    <th>Expires On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in shared_items %}
+                <tr>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.shared_with or '-' }}</td>
+                    <td>{{ item.expires_at.strftime('%Y-%m-%d') if item.expires_at else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-muted text-center">
+                        No shared documents found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

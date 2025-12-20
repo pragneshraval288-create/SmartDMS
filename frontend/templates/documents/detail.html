@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}{{ document.title }} - SmartDMS{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-0">{{ document.title }}</h1>
+    <div class="text-muted small">
+      {{ document.file_type|upper if document.file_type else '-' }}
+      • v{{ versions[0].version if versions else 1 }}
+      • Uploaded by {{ document.uploader.username if document.uploader else '-' }}
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('document.download', document_id=document.id) }}" class="btn btn-sm btn-outline-primary">
+      Download
+    </a>
+
+    {% if document.file_type in ['pdf','png','jpg','jpeg'] %}
+    <a href="{{ url_for('document.preview', document_id=document.id) }}" target="_blank"
+      class="btn btn-sm btn-outline-secondary">
+      Preview
+    </a>
+    {% endif %}
+
+    {% if document.is_active %}
+    {% if current_user.id == document.uploaded_by
+    or current_user.is_manager
+    or current_user.is_admin %}
+    <form action="{{ url_for('document.archive', document_id=document.id) }}" method="post" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-outline-warning">Archive</button>
+    </form>
+    {% endif %}
+    {% else %}
+    {% if current_user.is_manager or current_user.is_admin %}
+    <form action="{{ url_for('document.restore_view', document_id=document.id) }}" method="post" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-outline-success">Restore</button>
+    </form>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- LEFT -->
+  <div class="col-lg-8">
+
+    <!-- DESCRIPTION -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6">Description</h2>
+        <p>{{ document.description or 'No description provided.' }}</p>
+
+        <h2 class="h6 mt-3">Tags</h2>
+        {% if document.tags %}
+        {% for t in document.tags.split(',') %}
+        <span class="badge bg-light text-dark border me-1">{{ t.strip() }}</span>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted">No tags.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Comments</h2>
+
+        <form method="post">
+          {{ comment_form.hidden_tag() }}
+          <div class="mb-2">
+            {{ comment_form.content(class="form-control", rows="2",
+            placeholder="Add a comment...") }}
+          </div>
+          <div class="text-end">
+            {{ comment_form.submit(class="btn btn-sm btn-primary") }}
+          </div>
+        </form>
+
+        <hr>
+
+        <ul class="list-group list-group-flush small">
+          {% for c in comments %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <strong>{{ c.author.username }}</strong>
+              <span class="text-muted">
+                {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+              </span>
+            </div>
+            <div>{{ c.content }}</div>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">No comments yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- UPLOAD NEW VERSION -->
+    {% if current_user.id == document.uploaded_by
+    or current_user.is_manager
+    or current_user.is_admin %}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Upload new version</h2>
+        <form method="post" enctype="multipart/form-data"
+          action="{{ url_for('document.update_file', document_id=document.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <input type="file" name="file" class="form-control" required>
+          </div>
+          <button class="btn btn-sm btn-primary">Upload</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col-lg-4">
+
+    <!-- METADATA -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Metadata</h2>
+        <dl class="row mb-0 small">
+          <dt class="col-5">File name</dt>
+          <dd class="col-7">{{ document.filename }}</dd>
+
+          <dt class="col-5">Status</dt>
+          <dd class="col-7">
+            <span class="badge
+              {% if document.status=='approved' %}bg-success
+              {% elif document.status=='rejected' %}bg-danger
+              {% else %}bg-warning text-dark{% endif %}">
+              {{ document.status|capitalize }}
+            </span>
+          </dd>
+
+          <dt class="col-5">Downloads</dt>
+          <dd class="col-7">{{ document.download_count }}</dd>
+
+          <dt class="col-5">Created</dt>
+          <dd class="col-7">{{ document.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+        </dl>
+
+        {% if current_user.is_manager or current_user.is_admin %}
+        <hr>
+        <form method="post" action="{{ url_for('document.update_status', document_id=document.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <label class="form-label small">Workflow status</label>
+          <div class="input-group input-group-sm">
+            <select name="status" class="form-select">
+              <option value="pending" {% if document.status=='pending' %}selected{% endif %}>Pending</option>
+              <option value="approved" {% if document.status=='approved' %}selected{% endif %}>Approved</option>
+              <option value="rejected" {% if document.status=='rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+            <button class="btn btn-outline-primary">Update</button>
+          </div>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- VERSION HISTORY -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Version history</h2>
+        <ul class="list-group list-group-flush small">
+          {% for v in versions %}
+          <li class="list-group-item">
+            v{{ v.version }} • {{ v.created_at.strftime('%Y-%m-%d') }}
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">No version history.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- SHARE -->
+    {% if current_user.id == document.uploaded_by
+    or current_user.is_manager
+    or current_user.is_admin %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Share document</h2>
+        <form method="post" action="{{ url_for('document.share', document_id=document.id) }}">
+          {{ share_form.hidden_tag() }}
+
+          <div class="mb-2">
+            {{ share_form.username_or_email(
+            class="form-control",
+            placeholder="Username or Email") }}
+          </div>
+
+          <div class="mb-2 form-check">
+            {{ share_form.can_edit(class="form-check-input") }}
+            {{ share_form.can_edit.label(class="form-check-label small") }}
+          </div>
+
+          <button class="btn btn-sm btn-outline-primary w-100">
+            Share
+          </button>
+        </form>
+
+        <hr>
+        <h2 class="h6 mb-2">Shared with</h2>
+        <ul class="list-group list-group-flush small">
+          {% for s in shares %}
+          <li class="list-group-item d-flex justify-content-between">
+            <span>{{ s.shared_with.username }}</span>
+            <span class="text-muted">
+              {{ 'Edit' if s.can_edit else 'View only' }}
+            </span>
+          </li>
+          {% else %}
+          <li class="list-group-item text-muted">Not shared.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

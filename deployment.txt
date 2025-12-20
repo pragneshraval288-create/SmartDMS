@@ -1,0 +1,159 @@
+# 🚀 SmartDMS Deployment Guide  
+
+A step-by-step walkthrough to get your **Smart Python-Powered Documents Management System (SmartDMS)** up and running in a local development environment.  
+
+---
+
+## 📋 1. Prerequisites
+
+- **Operating System**: Windows, Linux or macOS  
+- **Python**: ≥ 3.10  
+- **Database**: MySQL Server 8.0+  
+- **Package Manager**: pip  
+- **Virtual Environment**: venv (recommended)  
+
+---
+
+## 🔧 2. Project Setup
+
+1. **Obtain the code**  
+   - Clone from Git:  
+     ```bash
+     git clone https://github.com/pragneshraval288-create/SmartDMS
+     cd SmartDMS
+     ```  
+   - _Or_ extract the ZIP archive and `cd` into the project root.
+
+2. **Create & activate a virtual environment**  
+   - Linux/macOS  
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```  
+   - Windows (CMD)  
+     ```cmd
+     python -m venv venv
+     venv\Scripts\activate
+     ```  
+   - Windows (PowerShell)  
+     ```powershell
+     python -m venv venv
+     .\venv\Scripts\Activate.ps1
+     ```
+
+---
+
+## 📦 3. Install Dependencies
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+---
+
+## ⚙️ 4. Environment Configuration
+
+1. **Create a `.env`** file in the project root.  
+2. **Populate** it based on the template below:
+
+```
+# .env
+SECRET_KEY=your_strong_secret_key_here
+DATABASE_URL=mysql+pymysql://db_user:db_password@localhost/smartdms
+FLASK_APP=run.py
+FLASK_ENV=development
+```
+> **Note:** Never commit `.env` to version control.
+
+---
+
+## 🗄️ 5. MySQL Database Setup
+
+1. **Login** to MySQL as a privileged user:  
+   ```sql
+   mysql -u root -p
+   ```
+2. **Create the database**:  
+   ```sql
+   CREATE DATABASE smartdms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+3. **(Optional) Create a dedicated user**:  
+   ```sql
+   CREATE USER 'smartdms_user'@'localhost' IDENTIFIED BY 'strong_password';
+   GRANT ALL PRIVILEGES ON smartdms.* TO 'smartdms_user'@'localhost';
+   FLUSH PRIVILEGES;
+   ```
+4. Exit MySQL:  
+   ```sql
+   EXIT;
+   ```
+
+---
+
+## 🔄 6. Database Migrations
+
+SmartDMS uses Flask-Migrate (Alembic) to manage schema changes:
+
+1. **Initialize migrations** (only the first time):  
+   ```bash
+   flask db init
+   ```
+2. **Generate a migration**:  
+   ```bash
+   flask db migrate -m "Initial schema"
+   ```
+3. **Apply migrations**:  
+   ```bash
+   flask db upgrade
+   ```
+
+---
+
+## ▶️ 7. Run the Application
+
+```bash
+python run.py
+```
+
+- By default, the app listens on `http://127.0.0.1:5000/`.  
+- To change host/port, set environment variables or pass flags to Flask (e.g. `flask run --host=0.0.0.0 --port=8000`).
+
+---
+
+## 🌐 8. Access & Verify
+
+1. Open your browser.  
+2. Navigate to:  
+   ```
+   http://127.0.0.1:5000
+   ```
+3. You should see the SmartDMS login page.  
+
+---
+
+## 📝 9. Troubleshooting & Tips
+
+- **MySQL errors**: Ensure the server is running (`sudo service mysql start` or your OS-equivalent).  
+- **Missing packages**: Double-check `venv` is activated, then rerun `pip install -r requirements.txt`.  
+- **Environment variables**: Confirm `.env` values are correctly spelled and loaded—install `python-dotenv` if needed.  
+- **Migrations issues**: If you encounter “directory already exists,” delete the `migrations/` folder and re-run `flask db init`.
+
+---
+
+## 📌 10. Project Context
+
+- **Name**: Smart Python-Powered Documents Management System  
+- **Use Case**: BCA Final Year / Internship Project  
+- **Developer**: Pragnesh Raval  
+
+> **Disclaimer:** This guide is tailored for local development and academic demonstration. For production deployment, consider adding:  
+> - HTTPS/TLS termination  
+> - Gunicorn or uWSGI behind a reverse proxy  
+> - Secure secrets management  
+> - Automated CI/CD pipelines  
+
+---
+
+Thank you for choosing SmartDMS! 🎉  
+Happy coding & secure document management.

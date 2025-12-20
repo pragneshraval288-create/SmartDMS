@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% block title %}Documents - SmartDMS{% endblock %}
+{% block content %}
+
+<!-- ================= HEADER ================= -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-1">
+      {% if active_folder %}
+      {{ active_folder.name }}
+      {% else %}
+      All Documents
+      {% endif %}
+    </h1>
+
+    <nav class="small text-muted">
+      <a href="{{ url_for('document.list_documents') }}">Root</a>
+      {% if active_folder %}
+      / {{ active_folder.name }}
+      {% endif %}
+    </nav>
+  </div>
+
+  <div class="d-flex gap-2">
+    <!-- 🔥 ADDED -->
+    <button class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled data-bs-toggle="modal"
+      data-bs-target="#deleteModal">
+      Delete Selected
+    </button>
+
+    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+      + Folder
+    </button>
+
+    <a class="btn btn-sm btn-primary"
+      href="{{ url_for('document.upload', folder=active_folder.id if active_folder else None) }}">
+      Upload
+    </a>
+
+    <button class="btn btn-sm btn-outline-secondary" id="pasteBtn" disabled>
+      Paste
+    </button>
+  </div>
+</div>
+
+<!-- ================= CONTENT TABLE ================= -->
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <!-- 🔥 ADDED -->
+          <th width="40">
+            <input type="checkbox" id="selectAll">
+          </th>
+
+          <th>Title</th>
+          <th>Type</th>
+          <th>Tags</th>
+          <th>Uploaded</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for item in items %}
+
+        <!-- ========== FOLDER ROW ========== -->
+        {% if item.type == "folder" %}
+        {% set folder = item.obj %}
+        <tr>
+          <!-- 🔥 ADDED -->
+          <td>
+            <input type="checkbox" class="selectItem" data-type="folder" data-id="{{ folder.id }}">
+          </td>
+
+          <td>
+            <i class="bi bi-folder-fill text-primary me-2"></i>
+            <a href="{{ url_for('document.list_documents', folder=folder.id) }}">
+              {{ folder.name }}
+            </a>
+          </td>
+
+          <td class="text-muted">Folder</td>
+          <td>-</td>
+          <td>{{ folder.created_at.strftime('%Y-%m-%d') }}</td>
+
+          <td class="text-end">
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                &#x22EE;
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end" data-bs-auto-close="outside">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('document.list_documents', folder=folder.id) }}">
+                    Open
+                  </a>
+                </li>
+
+                <li>
+                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
+                    data-folder-action="copy">
+                    Copy
+                  </button>
+                </li>
+
+                <li>
+                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
+                    data-folder-action="move">
+                    Move
+                  </button>
+                </li>
+
+                <li>
+                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
+                    data-folder-action="paste">
+                    Paste here
+                  </button>
+                </li>
+
+                <li>
+                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
+                    data-folder-action="rename">
+                    Rename
+                  </button>
+                </li>
+
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+
+                <!-- 🔥 CHANGED (modal trigger) -->
+                <li>
+                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal" data-type="folder" data-id="{{ folder.id }}">
+                    Delete
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+
+        <!-- ========== DOCUMENT ROW ========== -->
+        {% if item.type == "document" %}
+        {% set doc = item.obj %}
+        <tr>
+          <!-- 🔥 ADDED -->
+          <td>
+            <input type="checkbox" class="selectItem" data-type="document" data-id="{{ doc.id }}">
+          </td>
+
+          <td>
+            <i class="bi bi-file-earmark-text me-2 text-secondary"></i>
+            <a href="{{ url_for('document.detail', document_id=doc.id) }}">
+              {{ doc.title }}
+            </a>
+          </td>
+
+          <td>{{ doc.file_type|upper if doc.file_type else '-' }}</td>
+          <td>{{ doc.tags or '-' }}</td>
+          <td>{{ doc.created_at.strftime('%Y-%m-%d') }}</td>
+
+          <td class="text-end">
+            <div class="dropdown">
+              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                &#x22EE;
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end">
+              
+                {% if doc.file_type in ['pdf','png','jpg','jpeg'] %}
+                <li>
+                  <a class="dropdown-item" target="_blank" href="{{ url_for('document.preview', document_id=doc.id) }}">
+                    Preview
+                  </a>
+                </li>
+                {% endif %}
+              
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('document.download', document_id=doc.id) }}">
+                    Download
+                  </a>
+                </li>
+              
+                <!-- ✅ ADDED BACK -->
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('document.detail', document_id=doc.id) }}">
+                    Edit
+                  </a>
+                </li>
+              
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('document.detail', document_id=doc.id) }}#share">
+                    Share
+                  </a>
+                </li>
+              
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+              
+                <li>
+                  <a href="#" class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="copy">
+                    Copy
+                  </a>
+                </li>
+              
+                <li>
+                  <a href="#" class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="move">
+                    Move
+                  </a>
+                </li>
+              
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+              
+                <li>
+                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                    data-type="document" data-id="{{ doc.id }}">
+                    Delete
+                  </button>
+                </li>
+              
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No folders or documents found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================= DELETE MODAL ================= -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Delete</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>Select how you want to delete.</p>
+      </div>
+
+      <div class="modal-footer d-flex gap-2">
+        <form method="POST" id="moveToBinForm" class="flex-fill">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="items" id="itemsBin">
+          <button class="btn btn-warning w-100">
+            Move to Recycle Bin
+          </button>
+        </form>
+
+        <form method="POST" id="permanentDeleteForm" class="flex-fill">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="items" id="itemsDelete">
+          <button class="btn btn-danger w-100">
+            Permanently Delete
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= JS ================= -->
+<script>
+  const selectAll = document.getElementById("selectAll");
+  const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+
+  function updateBulkBtn() {
+    bulkDeleteBtn.disabled = document.querySelectorAll(".selectItem:checked").length === 0;
+  }
+
+  selectAll.addEventListener("change", () => {
+    document.querySelectorAll(".selectItem").forEach(cb => cb.checked = selectAll.checked);
+    updateBulkBtn();
+  });
+
+  document.querySelectorAll(".selectItem").forEach(cb =>
+    cb.addEventListener("change", updateBulkBtn)
+  );
+
+  document.getElementById("deleteModal").addEventListener("show.bs.modal", function (e) {
+    let items = [];
+
+    if (e.relatedTarget && e.relatedTarget.dataset.id) {
+      items.push({
+        type: e.relatedTarget.dataset.type,
+        id: e.relatedTarget.dataset.id
+      });
+    } else {
+      document.querySelectorAll(".selectItem:checked").forEach(cb => {
+        items.push({ type: cb.dataset.type, id: cb.dataset.id });
+      });
+    }
+
+    document.getElementById("itemsBin").value = JSON.stringify(items);
+    document.getElementById("itemsDelete").value = JSON.stringify(items);
+
+    document.getElementById("moveToBinForm").action = "/documents/bulk/bin";
+    document.getElementById("permanentDeleteForm").action = "/documents/bulk/delete";
+  });
+</script>
+
+{% endblock %}

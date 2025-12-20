@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Roles & Permissions - SmartDMS{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-4">Roles & Permissions</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            Defined roles and their access levels.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Description</th>
+                    <th>Users Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in roles %}
+                <tr>
+                    <td>{{ r.name|capitalize }}</td>
+                    <td>{{ r.description or '-' }}</td>
+                    <td>{{ r.user_count }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-muted text-center">
+                        No roles defined.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

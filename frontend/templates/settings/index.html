@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - SmartDMS{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-4">Settings</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            Application-level and user preferences.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Setting</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in settings %}
+                <tr>
+                    <td>{{ s.key }}</td>
+                    <td>{{ s.value }}</td>
+                    <td>{{ s.description or '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-muted text-center">
+                        No settings available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - SmartDMS{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-4">Reports</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            Summary reports generated from system activity.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Report</th>
+                    <th>Description</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.name }}</td>
+                    <td>{{ r.description }}</td>
+                    <td>{{ r.updated_at.strftime('%Y-%m-%d') if r.updated_at else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-muted text-center">
+                        No reports available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Upload Documents - SmartDMS{% endblock %}
+{% block content %}
+
+<h1 class="h4 mb-3">Upload Documents</h1>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+
+    <form method="POST" action="{{ url_for('document.upload') }}" enctype="multipart/form-data">
+
+      {{ form.hidden_tag() }}
+
+      <!-- 🔴 FORM ERRORS -->
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          {% for field, errors in form.errors.items() %}
+          {% for error in errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="mb-3">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.tags.label(class="form-label") }}
+        {{ form.tags(class="form-control") }}
+        <div class="form-text">
+          Comma separated tags (optional)
+        </div>
+      </div>
+
+      <div class="mb-3">
+        {{ form.files.label(class="form-label") }}
+        {{ form.files(class="form-control") }}
+        <div class="form-text">
+          Allowed: pdf, doc, docx, xls, xlsx, ppt, pptx,
+          txt, png, jpg, jpeg, zip
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        Upload
+      </button>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

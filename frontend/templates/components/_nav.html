@@ -1,0 +1,141 @@
+<!-- ================= TOP NAVBAR ================= -->
+{% set ep = request.endpoint or '' %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm fixed-top">
+    <div class="container-fluid">
+
+        <!-- BRAND -->
+        <a class="navbar-brand fw-semibold" href="{{ url_for('dashboard.index') }}">
+            SmartDMS
+        </a>
+
+        <!-- MOBILE TOGGLER -->
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#topNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <button class="btn btn-sm btn-outline-light me-2 d-lg-none" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="topNav">
+            {% if current_user.is_authenticated %}
+
+            <!-- LEFT MENU -->
+            <ul class="navbar-nav me-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link {% if ep.startswith('dashboard.') %}active{% endif %}"
+                        href="{{ url_for('dashboard.index') }}">
+                        Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if ep == 'document.list_documents' %}active{% endif %}"
+                        href="{{ url_for('document.list_documents') }}">
+                        All Documents
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if ep == 'document.my_documents' %}active{% endif %}"
+                        href="{{ url_for('document.my_documents') }}">
+                        My Documents
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if ep == 'document.upload' %}active{% endif %}"
+                        href="{{ url_for('document.upload') }}">
+                        Upload
+                    </a>
+                </li>
+
+            </ul>
+
+            <!-- RIGHT ACTIONS -->
+            <div class="d-flex align-items-center gap-2">
+
+                <!-- 🔔 NOTIFICATIONS (UNCHANGED) -->
+                <div class="position-relative">
+                    <button id="notifBtn" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-bell-fill"></i>
+                        {% if unread_notifications %}
+                        <span class="badge bg-danger">
+                            {{ unread_notifications|length }}
+                        </span>
+                        {% endif %}
+                    </button>
+
+                    <div id="notifDropdown" class="notif-dropdown d-none">
+                        {% if unread_notifications %}
+
+                        <div class="notif-actions text-end px-2 mb-2">
+                            <button id="notifClearAll" class="btn btn-sm btn-link text-danger">
+                                Clear all
+                            </button>
+                        </div>
+
+                        {% for n in unread_notifications %}
+                        <div class="notif-item d-flex justify-content-between gap-2" data-id="{{ n.id }}">
+
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">{{ n.message }}</div>
+                                <small class="text-muted">
+                                    {{ n.created_at | ist }}
+                                </small>
+                            </div>
+
+                            <button class="notif-delete btn btn-sm text-muted">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+
+                        </div>
+                        {% endfor %}
+
+                        {% else %}
+                        <div class="notif-empty text-center py-2">
+                            No new notifications
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 👤 USER DROPDOWN (PROFILE + LOGOUT) -->
+                <div class="dropdown">
+
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center gap-1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+
+                        <i class="bi bi-person-circle"></i>
+                        {{ current_user.username }}
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('profile.edit_profile') }}">
+                                <i class="bi bi-pencil-square me-2"></i>
+                                Edit Profile
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Logout
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>

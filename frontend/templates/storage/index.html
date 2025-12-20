@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Storage - SmartDMS{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-4">Storage</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            Storage usage and file system overview.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in stats %}
+                <tr>
+                    <td>{{ item.label }}</td>
+                    <td>{{ item.value }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2" class="text-muted text-center">
+                        Storage information not available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

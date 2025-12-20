@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - SmartDMS{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Notifications</h1>
+
+    {% if notifications %}
+    <button id="clearAllBtn" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-trash3 me-1"></i> Clear all
+    </button>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            System and document-related notifications.
+        </p>
+
+        <ul class="list-group list-group-flush small" id="notifList">
+
+            {% for n in notifications %}
+            <li class="list-group-item d-flex justify-content-between align-items-start gap-3" data-id="{{ n.id }}">
+
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">
+                        {{ n.message }}
+                    </div>
+
+                    <div class="text-muted small mt-1">
+                        {{ n.created_at | ist }}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    {% if not n.is_read %}
+                    <span class="badge bg-primary">New</span>
+                    {% endif %}
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary delete-btn" data-id="{{ n.id }}"
+                        title="Delete">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted text-center py-3">
+                No notifications available.
+            </li>
+            {% endfor %}
+
+        </ul>
+
+    </div>
+</div>
+
+<!-- CSRF TOKEN FOR JS -->
+<input type="hidden" id="csrfToken" value="{{ csrf_token() }}">
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const csrfToken = document.getElementById("csrfToken")?.value;
+
+        // -----------------------------------
+        // DELETE SINGLE (EVENT DELEGATION)
+        // -----------------------------------
+        document.getElementById("notifList").addEventListener("click", (e) => {
+            const btn = e.target.closest(".delete-btn");
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            const li = btn.closest("li");
+
+            fetch(`/notifications/delete/${id}`, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrfToken
+                }
+            })
+                .then(res => {
+                    if (res.ok) li.remove();
+                });
+        });
+
+        // -----------------------------------
+        // CLEAR ALL
+        // -----------------------------------
+        const clearBtn = document.getElementById("clearAllBtn");
+
+        if (clearBtn) {
+            clearBtn.addEventListener("click", () => {
+                if (!confirm("Clear all notifications?")) return;
+
+                fetch("/notifications/clear-all", {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": csrfToken
+                    }
+                })
+                    .then(res => {
+                        if (!res.ok) return;
+
+                        document.getElementById("notifList").innerHTML = `
+          <li class="list-group-item text-muted text-center py-3">
+            No notifications available.
+          </li>
+        `;
+                        clearBtn.remove();
+                    });
+            });
+        }
+
+    });
+</script>
+{% endblock %}

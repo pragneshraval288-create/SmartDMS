@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Archived Documents - SmartDMS{% endblock %}
+
+{% block content %}
+<h1 class="h4 mb-4">Archived Documents</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <p class="text-muted mb-3">
+            All documents that have been archived are listed here.
+        </p>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Archived On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.file_type|upper if doc.file_type else '-' }}</td>
+                    <td>{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-muted text-center">
+                        No archived documents found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}
