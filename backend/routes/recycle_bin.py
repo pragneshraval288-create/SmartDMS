@@ -12,21 +12,61 @@ recycle_bin_bp = Blueprint(
     url_prefix="/recycle-bin"
 )
 
-# =========================
+# =====================================================
+# 🔥 HELPERS (RECURSIVE & SAFE)
+# =====================================================
+def _restore_folder_recursive(folder: Folder):
+    folder.is_deleted = False
+    folder.deleted_at = None
+
+    # restore documents
+    for doc in folder.documents:
+        doc.is_deleted = False
+        doc.deleted_at = None
+
+    # restore subfolders
+    for child in folder.children:
+        _restore_folder_recursive(child)
+
+
+def _delete_folder_recursive(folder: Folder):
+    # delete documents first
+    for doc in folder.documents:
+        db.session.delete(doc)
+
+    # delete child folders
+    for child in folder.children:
+        _delete_folder_recursive(child)
+
+    # finally delete this folder
+    db.session.delete(folder)
+
+
+# =====================================================
 # RECYCLE BIN HOME
-# =========================
+# =====================================================
 @recycle_bin_bp.route("/", methods=["GET"])
 @login_required
 def index():
-    deleted_documents = Document.query.filter_by(
-        uploaded_by=current_user.id,
-        is_deleted=True
-    ).order_by(Document.deleted_at.desc()).all()
+    deleted_documents = (
+        Document.query
+        .filter(
+            Document.uploaded_by == current_user.id,
+            Document.is_deleted == True
+        )
+        .order_by(Document.deleted_at.desc())
+        .all()
+    )
 
-    deleted_folders = Folder.query.filter_by(
-        created_by=current_user.id,
-        is_deleted=True
-    ).order_by(Folder.deleted_at.desc()).all()
+    deleted_folders = (
+        Folder.query
+        .filter(
+            Folder.created_by == current_user.id,
+            Folder.is_deleted == True
+        )
+        .order_by(Folder.deleted_at.desc())
+        .all()
+    )
 
     return render_template(
         "recycle_bin/index.html",
@@ -34,9 +74,10 @@ def index():
         deleted_folders=deleted_folders
     )
 
-# =========================
+
+# =====================================================
 # RESTORE DOCUMENT
-# =========================
+# =====================================================
 @recycle_bin_bp.route("/document/<int:document_id>/restore", methods=["POST"])
 @login_required
 def restore_document(document_id):
@@ -57,9 +98,10 @@ def restore_document(document_id):
     flash("Document restored successfully.", "success")
     return redirect(url_for("recycle_bin.index"))
 
-# =========================
+
+# =====================================================
 # PERMANENT DELETE DOCUMENT
-# =========================
+# =====================================================
 @recycle_bin_bp.route("/document/<int:document_id>/delete", methods=["POST"])
 @login_required
 def delete_document_permanently(document_id):
@@ -79,9 +121,10 @@ def delete_document_permanently(document_id):
     flash("Document permanently deleted.", "danger")
     return redirect(url_for("recycle_bin.index"))
 
-# =========================
+
+# =====================================================
 # RESTORE FOLDER
-# =========================
+# =====================================================
 @recycle_bin_bp.route("/folder/<int:folder_id>/restore", methods=["POST"])
 @login_required
 def restore_folder(folder_id):
@@ -90,8 +133,7 @@ def restore_folder(folder_id):
     if folder.created_by != current_user.id:
         abort(403)
 
-    folder.is_deleted = False
-    folder.deleted_at = None
+    _restore_folder_recursive(folder)
     db.session.commit()
 
     log_activity(
@@ -102,9 +144,10 @@ def restore_folder(folder_id):
     flash("Folder restored successfully.", "success")
     return redirect(url_for("recycle_bin.index"))
 
-# =========================
+
+# =====================================================
 # PERMANENT DELETE FOLDER
-# =========================
+# =====================================================
 @recycle_bin_bp.route("/folder/<int:folder_id>/delete", methods=["POST"])
 @login_required
 def delete_folder_permanently(folder_id):
@@ -113,7 +156,7 @@ def delete_folder_permanently(folder_id):
     if folder.created_by != current_user.id:
         abort(403)
 
-    db.session.delete(folder)
+    _delete_folder_recursive(folder)
     db.session.commit()
 
     log_activity(
@@ -124,21 +167,28 @@ def delete_folder_permanently(folder_id):
     flash("Folder permanently deleted.", "danger")
     return redirect(url_for("recycle_bin.index"))
 
-# =========================
-# EMPTY RECYCLE BIN 🔥
-# =========================
+
+# =====================================================
+# EMPTY RECYCLE BIN
+# =====================================================
 @recycle_bin_bp.route("/empty", methods=["POST"])
 @login_required
 def empty_recycle_bin():
-    Document.query.filter_by(
-        uploaded_by=current_user.id,
-        is_deleted=True
+
+    # delete documents
+    Document.query.filter(
+        Document.uploaded_by == current_user.id,
+        Document.is_deleted == True
     ).delete(synchronize_session=False)
 
-    Folder.query.filter_by(
-        created_by=current_user.id,
-        is_deleted=True
-    ).delete(synchronize_session=False)
+    # delete folders recursively
+    folders = Folder.query.filter(
+        Folder.created_by == current_user.id,
+        Folder.is_deleted == True
+    ).all()
+
+    for folder in folders:
+        _delete_folder_recursive(folder)
 
     db.session.commit()
 

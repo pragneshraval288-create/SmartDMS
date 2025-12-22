@@ -31,10 +31,10 @@
         Deleted Folders
     </div>
 
-    <div class="card-body p-0">
-        {% if deleted_folders %}
+    {% if deleted_folders %}
+    <div class="card-body p-0" style="max-height: 260px; overflow-y: auto;">
         <table class="table table-hover table-sm mb-0">
-            <thead class="table-light">
+            <thead class="table-light sticky-top">
                 <tr>
                     <th>Name</th>
                     <th>Deleted At</th>
@@ -83,12 +83,12 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <div class="p-3 text-muted small">
-            No folders in recycle bin.
-        </div>
-        {% endif %}
     </div>
+    {% else %}
+    <div class="p-3 text-muted small">
+        No folders in recycle bin.
+    </div>
+    {% endif %}
 </div>
 
 <!-- =========================
@@ -99,10 +99,10 @@
         Deleted Documents
     </div>
 
-    <div class="card-body p-0">
-        {% if deleted_documents %}
+    {% if deleted_documents %}
+    <div class="card-body p-0" style="max-height: 260px; overflow-y: auto;">
         <table class="table table-hover table-sm mb-0">
-            <thead class="table-light">
+            <thead class="table-light sticky-top">
                 <tr>
                     <th>Title</th>
                     <th>Type</th>
@@ -150,12 +150,12 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <div class="p-3 text-muted small">
-            No documents in recycle bin.
-        </div>
-        {% endif %}
     </div>
+    {% else %}
+    <div class="p-3 text-muted small">
+        No documents in recycle bin.
+    </div>
+    {% endif %}
 </div>
 
 {% endblock %}

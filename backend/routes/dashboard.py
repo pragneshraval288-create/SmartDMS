@@ -11,9 +11,12 @@ from ..models import (
     Folder
 )
 
-dashboard_bp = Blueprint("dashboard", __name__)
+dashboard_bp = Blueprint(
+    "dashboard",
+    __name__,
+    url_prefix="/dashboard"
+)
 
-# Fixed file type order for dashboard charts
 FILE_TYPE_ORDER = [
     "pdf", "doc", "docx", "xls", "xlsx",
     "ppt", "pptx", "txt", "png", "jpg",
@@ -21,23 +24,28 @@ FILE_TYPE_ORDER = [
 ]
 
 
-# 👉 FINAL ROUTE: /dashboard/
-@dashboard_bp.route("/")
+@dashboard_bp.route("/", methods=["GET"])
 @login_required
 def index():
 
     # ------------------------------
-    # BASE DOCUMENT QUERY
+    # BASE QUERIES (🔥 FIXED)
     # ------------------------------
     if current_user.is_admin:
-        doc_query = Document.query
-        folder_query = Folder.query
-    else:
         doc_query = Document.query.filter(
-            Document.uploaded_by == current_user.id
+            Document.is_deleted.is_(False)
         )
         folder_query = Folder.query.filter(
-            Folder.created_by == current_user.id
+            Folder.is_deleted.is_(False)
+        )
+    else:
+        doc_query = Document.query.filter(
+            Document.uploaded_by == current_user.id,
+            Document.is_deleted.is_(False)
+        )
+        folder_query = Folder.query.filter(
+            Folder.created_by == current_user.id,
+            Folder.is_deleted.is_(False)
         )
 
     # ------------------------------
@@ -47,7 +55,6 @@ def index():
     active_docs = doc_query.filter_by(is_active=True).count()
     archived_docs = doc_query.filter_by(is_active=False).count()
     total_users = User.query.count()
-
     total_folders = folder_query.count()
 
     one_week_ago = datetime.utcnow() - timedelta(days=7)
@@ -62,7 +69,7 @@ def index():
     expiring_docs = (
         doc_query
         .filter(
-            Document.expiry_date != None,
+            Document.expiry_date.isnot(None),
             Document.expiry_date <= in_30_days
         )
         .order_by(Document.expiry_date.asc())
@@ -81,16 +88,15 @@ def index():
     )
 
     # ------------------------------
-    # RECENT FOLDERS (NEW)
+    # RECENT FOLDERS (🔥 FIXED)
     # ------------------------------
     recent_folders = (
         folder_query
-        .filter(Folder.parent_id == None)   # 🔥 ONLY ROOT FOLDERS
+        .filter(Folder.parent_id.is_(None))
         .order_by(Folder.created_at.desc())
         .limit(5)
         .all()
     )
-
 
     # ------------------------------
     # RECENT ACTIVITIES
@@ -112,7 +118,7 @@ def index():
         )
 
     # ------------------------------
-    # UPLOAD TREND (LIVE DATA ONLY)
+    # UPLOAD TREND
     # ------------------------------
     today = datetime.utcnow().date()
     start_date = today - timedelta(days=9)
@@ -129,7 +135,6 @@ def index():
         .all()
     )
 
-    # DB may return day as string (YYYY-MM-DD)
     uploads_map = {
         str(day): count
         for day, count in uploads_raw
@@ -140,7 +145,6 @@ def index():
     for i in range(10):
         d = (start_date + timedelta(days=i)).strftime("%Y-%m-%d")
         uploads_per_day.append((d, uploads_map.get(d, 0)))
-
 
     # ------------------------------
     # FILE TYPE DISTRIBUTION
@@ -154,9 +158,7 @@ def index():
 
     normalized = {}
     for ftype, cnt in raw_types:
-        clean = (ftype or "other").strip().lower()
-        if clean == "":
-            clean = "other"
+        clean = (ftype or "other").strip().lower() or "other"
         normalized[clean] = cnt
 
     type_distribution = [
@@ -190,7 +192,7 @@ def index():
         )
 
     # ------------------------------
-    # RENDER PAGE
+    # RENDER
     # ------------------------------
     return render_template(
         "dashboard/index.html",
@@ -208,5 +210,3 @@ def index():
         expiring_docs=expiring_docs,
         unread_notifications=unread_notifications,
     )
-
-

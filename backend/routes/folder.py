@@ -232,20 +232,28 @@ def move_folder_to_bin(folder_id):
     folder = Folder.query.get_or_404(folder_id)
 
     if not _owns_folder(folder):
-        abort(403)
+        return jsonify(success=False, error="Permission denied"), 403
 
-    folder.is_deleted = True
-    folder.deleted_at = datetime.utcnow()
+    def _soft_delete_folder(f):
+        f.is_deleted = True
+        f.deleted_at = datetime.utcnow()
 
-    # 🔥 optional: move documents also to bin
-    for doc in folder.documents:
-        doc.is_deleted = True
-        doc.deleted_at = datetime.utcnow()
+        for d in f.documents:
+            d.is_deleted = True
+            d.deleted_at = datetime.utcnow()
 
+        for child in f.children:
+            _soft_delete_folder(child)
+
+    _soft_delete_folder(folder)
     db.session.commit()
 
-    flash("Folder moved to Recycle Bin.", "warning")
-    return redirect(url_for("document.list_documents"))
+    log_activity(
+        "folder_bin",
+        details=f"Moved folder '{folder.name}' to recycle bin"
+    )
+
+    return jsonify(success=True)
 
 
 # =========================

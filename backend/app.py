@@ -64,6 +64,7 @@ def create_app():
     login_manager.init_app(app)
     csrf.init_app(app)
 
+    # 🔐 IMPORTANT
     login_manager.login_view = "auth.login"
 
     # --------------------------------------------------
@@ -115,7 +116,7 @@ def create_app():
     app.register_blueprint(document_bp)
     app.register_blueprint(folder_bp)
     app.register_blueprint(profile_bp)
-    app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
+    app.register_blueprint(dashboard_bp)  # ✅ FIXED (no url_prefix here)
     app.register_blueprint(api_bp)
 
     # 🔥 RECYCLE BIN
@@ -135,12 +136,11 @@ def create_app():
     app.register_blueprint(notifications_bp)
 
     # --------------------------------------------------
-    # HOME
+    # HOME (ROOT FIX)
     # --------------------------------------------------
     @app.route("/")
     def home():
-        if current_user.is_authenticated:
-            return redirect(url_for("dashboard.index"))
+        # 🔐 ALWAYS show login first
         return redirect(url_for("auth.login"))
 
     return app

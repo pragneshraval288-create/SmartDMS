@@ -131,11 +131,9 @@
                 </li>
 
                 <!-- 🔥 CHANGED (modal trigger) -->
-                <li>
-                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
-                    data-bs-target="#deleteModal" data-type="folder" data-id="{{ folder.id }}">
-                    Delete
-                  </button>
+                <button type="button" class="dropdown-item text-danger" data-folder-action="delete" data-folder-id="{{ folder.id }}">
+                  Delete
+                </button>
                 </li>
               </ul>
             </div>
@@ -243,80 +241,5 @@
   </div>
 </div>
 
-<!-- ================= DELETE MODAL ================= -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">Delete</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <p>Select how you want to delete.</p>
-      </div>
-
-      <div class="modal-footer d-flex gap-2">
-        <form method="POST" id="moveToBinForm" class="flex-fill">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="items" id="itemsBin">
-          <button class="btn btn-warning w-100">
-            Move to Recycle Bin
-          </button>
-        </form>
-
-        <form method="POST" id="permanentDeleteForm" class="flex-fill">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="items" id="itemsDelete">
-          <button class="btn btn-danger w-100">
-            Permanently Delete
-          </button>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- ================= JS ================= -->
-<script>
-  const selectAll = document.getElementById("selectAll");
-  const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
-
-  function updateBulkBtn() {
-    bulkDeleteBtn.disabled = document.querySelectorAll(".selectItem:checked").length === 0;
-  }
-
-  selectAll.addEventListener("change", () => {
-    document.querySelectorAll(".selectItem").forEach(cb => cb.checked = selectAll.checked);
-    updateBulkBtn();
-  });
-
-  document.querySelectorAll(".selectItem").forEach(cb =>
-    cb.addEventListener("change", updateBulkBtn)
-  );
-
-  document.getElementById("deleteModal").addEventListener("show.bs.modal", function (e) {
-    let items = [];
-
-    if (e.relatedTarget && e.relatedTarget.dataset.id) {
-      items.push({
-        type: e.relatedTarget.dataset.type,
-        id: e.relatedTarget.dataset.id
-      });
-    } else {
-      document.querySelectorAll(".selectItem:checked").forEach(cb => {
-        items.push({ type: cb.dataset.type, id: cb.dataset.id });
-      });
-    }
-
-    document.getElementById("itemsBin").value = JSON.stringify(items);
-    document.getElementById("itemsDelete").value = JSON.stringify(items);
-
-    document.getElementById("moveToBinForm").action = "/documents/bulk/bin";
-    document.getElementById("permanentDeleteForm").action = "/documents/bulk/delete";
-  });
-</script>
 
 {% endblock %}

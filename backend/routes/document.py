@@ -58,11 +58,16 @@ def list_documents():
     active_folder = Folder.query.get(folder_id) if folder_id else None
 
     # -------------------------
-    # FOLDERS
+    # FOLDERS (FIXED)
     # -------------------------
     folder_query = Folder.query.filter(
-        Folder.created_by == current_user.id
+        Folder.deleted_at.is_(None)
     )
+
+    if not current_user.is_admin:
+        folder_query = folder_query.filter(
+            Folder.created_by == current_user.id
+        )
 
     if active_folder:
         folder_query = folder_query.filter(
@@ -73,15 +78,16 @@ def list_documents():
             Folder.parent_id.is_(None)
         )
 
-    folders = folder_query.order_by(Folder.created_at.asc()).all()
+    folders = folder_query.order_by(
+        Folder.created_at.asc()
+    ).all()
 
     # -------------------------
-    # DOCUMENTS  🔥 FIXED
+    # DOCUMENTS (ALREADY CORRECT)
     # -------------------------
-    doc_query = Document.query
-
-    # 🔒 hide recycle bin documents
-    doc_query = doc_query.filter(Document.is_deleted.is_(False))
+    doc_query = Document.query.filter(
+        Document.is_deleted.is_(False)
+    )
 
     if not current_user.is_admin:
         doc_query = (
@@ -125,6 +131,9 @@ def list_documents():
         Document.created_at.desc()
     ).all()
 
+    # -------------------------
+    # MERGE
+    # -------------------------
     items = (
         [{"type": "folder", "obj": f} for f in folders] +
         [{"type": "document", "obj": d} for d in documents]
@@ -136,6 +145,7 @@ def list_documents():
         active_folder=active_folder,
         form=form
     )
+
 
 
 # ==================================================
