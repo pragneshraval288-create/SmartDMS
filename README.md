@@ -244,16 +244,5 @@ Please follow the existing code style and include relevant tests where applicabl
 **Last Updated:** December 2025  
 **Developer:** Pragnesh Raval (BCA Final Year)  
 
-<<<<<<< HEAD
 For questions, reach out at: pragneshraval288@gmail.com
-=======
-For questions, reach out at: pragnesh.raval@example.com  
->>>>>>> 50748fa6679c7bf55fce5dcc89e5e18f26cb5562
 
----
-
-Thank you for checking out **SmartDMS**! 🚀
-<<<<<<< HEAD
->>>>>>> 50748fa (Initial commit)
-=======
->>>>>>> 50748fa6679c7bf55fce5dcc89e5e18f26cb5562

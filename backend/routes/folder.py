@@ -59,6 +59,17 @@ def _clone_folder(folder, parent_id=None):
 
     return new_folder
 
+def _hard_delete_folder(folder: Folder):
+    # delete all documents inside folder
+    for doc in folder.documents:
+        db.session.delete(doc)
+
+    # recursively delete child folders
+    for child in folder.children:
+        _hard_delete_folder(child)
+
+    # finally delete the folder itself
+    db.session.delete(folder)
 
 # =========================
 # CREATE FOLDER (PASTE TARGET)
@@ -257,7 +268,7 @@ def move_folder_to_bin(folder_id):
 
 
 # =========================
-# DELETE FOLDER
+# DELETE FOLDER (PERMANENT)
 # =========================
 @folder_bp.route("/<int:folder_id>/delete", methods=["POST"])
 @login_required
@@ -268,27 +279,23 @@ def delete_folder(folder_id):
         return jsonify(success=False, error="Permission denied"), 403
 
     try:
-        folder.is_deleted = True
-        folder.deleted_at = datetime.utcnow()
-
-        for doc in folder.documents:
-            doc.is_deleted = True
-            doc.deleted_at = datetime.utcnow()
+        _hard_delete_folder(folder)
         db.session.commit()
 
-    except Exception:
+    except Exception as e:
         db.session.rollback()
         return jsonify(
             success=False,
-            error="Unable to delete folder"
+            error=str(e)
         ), 500
 
     log_activity(
-        "folder_delete",
-        details=f"Deleted folder '{folder.name}'"
+        "folder_permanent_delete",
+        details=f"Permanently deleted folder '{folder.name}'"
     )
 
     return jsonify(success=True)
+
 
 # =========================
 # BULK MOVE FOLDERS TO RECYCLE BIN
