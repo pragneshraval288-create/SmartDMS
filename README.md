@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 # SmartDMS Enterprise
 
 High-level Document Management System for learning / internship demo.
