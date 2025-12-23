@@ -96,6 +96,7 @@ class Folder(db.Model):
         return (
             f"<Folder id={self.id} "
             f"name='{self.name}' "
+            f"favorite={self.is_favorite} "
             f"deleted={self.is_deleted} "
             f"parent_id={self.parent_id}>"
         )

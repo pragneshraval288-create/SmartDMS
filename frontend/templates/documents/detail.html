@@ -23,24 +23,6 @@
       Preview
     </a>
     {% endif %}
-
-    {% if document.is_active %}
-    {% if current_user.id == document.uploaded_by
-    or current_user.is_manager
-    or current_user.is_admin %}
-    <form action="{{ url_for('document.archive', document_id=document.id) }}" method="post" class="d-inline">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-sm btn-outline-warning">Archive</button>
-    </form>
-    {% endif %}
-    {% else %}
-    {% if current_user.is_manager or current_user.is_admin %}
-    <form action="{{ url_for('document.restore_view', document_id=document.id) }}" method="post" class="d-inline">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-sm btn-outline-success">Restore</button>
-    </form>
-    {% endif %}
-    {% endif %}
   </div>
 </div>
 
@@ -57,7 +39,9 @@
         <h2 class="h6 mt-3">Tags</h2>
         {% if document.tags %}
         {% for t in document.tags.split(',') %}
-        <span class="badge bg-light text-dark border me-1">{{ t.strip() }}</span>
+        <span class="badge bg-light text-dark border me-1">
+          {{ t.strip() }}
+        </span>
         {% endfor %}
         {% else %}
         <p class="text-muted">No tags.</p>
@@ -73,8 +57,11 @@
         <form method="post">
           {{ comment_form.hidden_tag() }}
           <div class="mb-2">
-            {{ comment_form.content(class="form-control", rows="2",
-            placeholder="Add a comment...") }}
+            {{ comment_form.content(
+            class="form-control",
+            rows="2",
+            placeholder="Add a comment..."
+            ) }}
           </div>
           <div class="text-end">
             {{ comment_form.submit(class="btn btn-sm btn-primary") }}
@@ -95,7 +82,9 @@
             <div>{{ c.content }}</div>
           </li>
           {% else %}
-          <li class="list-group-item text-muted">No comments yet.</li>
+          <li class="list-group-item text-muted">
+            No comments yet.
+          </li>
           {% endfor %}
         </ul>
       </div>
@@ -114,7 +103,9 @@
           <div class="mb-2">
             <input type="file" name="file" class="form-control" required>
           </div>
-          <button class="btn btn-sm btn-primary">Upload</button>
+          <button class="btn btn-sm btn-primary">
+            Upload
+          </button>
         </form>
       </div>
     </div>
@@ -132,39 +123,14 @@
           <dt class="col-5">File name</dt>
           <dd class="col-7">{{ document.filename }}</dd>
 
-          <dt class="col-5">Status</dt>
-          <dd class="col-7">
-            <span class="badge
-              {% if document.status=='approved' %}bg-success
-              {% elif document.status=='rejected' %}bg-danger
-              {% else %}bg-warning text-dark{% endif %}">
-              {{ document.status|capitalize }}
-            </span>
-          </dd>
-
           <dt class="col-5">Downloads</dt>
           <dd class="col-7">{{ document.download_count }}</dd>
 
           <dt class="col-5">Created</dt>
-          <dd class="col-7">{{ document.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+          <dd class="col-7">
+            {{ document.created_at.strftime('%Y-%m-%d %H:%M') }}
+          </dd>
         </dl>
-
-        {% if current_user.is_manager or current_user.is_admin %}
-        <hr>
-        <form method="post" action="{{ url_for('document.update_status', document_id=document.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-          <label class="form-label small">Workflow status</label>
-          <div class="input-group input-group-sm">
-            <select name="status" class="form-select">
-              <option value="pending" {% if document.status=='pending' %}selected{% endif %}>Pending</option>
-              <option value="approved" {% if document.status=='approved' %}selected{% endif %}>Approved</option>
-              <option value="rejected" {% if document.status=='rejected' %}selected{% endif %}>Rejected</option>
-            </select>
-            <button class="btn btn-outline-primary">Update</button>
-          </div>
-        </form>
-        {% endif %}
       </div>
     </div>
 
@@ -178,7 +144,9 @@
             v{{ v.version }} • {{ v.created_at.strftime('%Y-%m-%d') }}
           </li>
           {% else %}
-          <li class="list-group-item text-muted">No version history.</li>
+          <li class="list-group-item text-muted">
+            No version history.
+          </li>
           {% endfor %}
         </ul>
       </div>
@@ -197,12 +165,15 @@
           <div class="mb-2">
             {{ share_form.username_or_email(
             class="form-control",
-            placeholder="Username or Email") }}
+            placeholder="Username or Email"
+            ) }}
           </div>
 
           <div class="mb-2 form-check">
             {{ share_form.can_edit(class="form-check-input") }}
-            {{ share_form.can_edit.label(class="form-check-label small") }}
+            {{ share_form.can_edit.label(
+            class="form-check-label small"
+            ) }}
           </div>
 
           <button class="btn btn-sm btn-outline-primary w-100">
@@ -221,7 +192,9 @@
             </span>
           </li>
           {% else %}
-          <li class="list-group-item text-muted">Not shared.</li>
+          <li class="list-group-item text-muted">
+            Not shared.
+          </li>
           {% endfor %}
         </ul>
       </div>

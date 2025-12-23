@@ -44,6 +44,7 @@ class Document(db.Model):
         index=True
     )
 
+
     # 🔥 RECYCLE BIN FIELDS
     is_deleted = db.Column(
         db.Boolean,
@@ -129,7 +130,11 @@ class Document(db.Model):
     )
 
     def __repr__(self):
-        return f"<Document id={self.id} title='{self.title}' deleted={self.is_deleted}>"
+        return (
+            f"<Document id={self.id} "
+            f"title='{self.title}' "
+            f"deleted={self.is_deleted}>"
+        )
 
 
 # ======================

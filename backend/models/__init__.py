@@ -5,6 +5,7 @@ from .comment import DocumentComment
 from .share import DocumentShare
 from .activity import ActivityLog
 from .notification import Notification
+from .favorite import DocumentFavorite, FolderFavorite
 
 __all__ = [
     "User",
@@ -15,4 +16,6 @@ __all__ = [
     "DocumentShare",
     "ActivityLog",
     "Notification",
+    "DocumentFavorite",
+    "FolderFavorite",
 ]

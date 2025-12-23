@@ -423,6 +423,7 @@ def update_file(document_id):
     )
 
 
+
 # =========================
 # ARCHIVE / RESTORE
 # =========================
@@ -436,14 +437,13 @@ def archive(document_id):
         or current_user.is_admin
         or doc.uploaded_by == current_user.id
     ):
-        flash("You are not allowed to archive this document.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        return jsonify(
+            success=False,
+            error="You are not allowed to archive this document."
+        ), 403
 
     soft_archive(doc)
-    flash("Document archived.", "info")
-    return redirect(url_for("document.list_documents"))
+    return jsonify(success=True)
 
 
 @document_bp.route("/<int:document_id>/restore", methods=["POST"])
@@ -453,11 +453,13 @@ def restore_view(document_id):
 
     if not (current_user.is_manager or current_user.is_admin):
         flash("Only manager/admin can restore documents.", "danger")
-        return redirect(url_for("document.archived"))
+        return redirect(url_for("archive.index"))
 
     restore(doc)
     flash("Document restored.", "success")
-    return redirect(url_for("document.archived"))
+    return redirect(url_for("archive.index"))
+
+
 
 
 # =========================

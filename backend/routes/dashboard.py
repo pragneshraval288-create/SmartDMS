@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from ..models import (
     Document,
     User,
     ActivityLog,
     Notification,
-    Folder
+    Folder,
+    DocumentShare
 )
 
 dashboard_bp = Blueprint(
@@ -28,9 +29,9 @@ FILE_TYPE_ORDER = [
 @login_required
 def index():
 
-    # ------------------------------
-    # BASE QUERIES (🔥 FIXED)
-    # ------------------------------
+    # ==================================================
+    # BASE QUERIES (OWNED + SHARED FOR NON-ADMIN)
+    # ==================================================
     if current_user.is_admin:
         doc_query = Document.query.filter(
             Document.is_deleted.is_(False)
@@ -39,21 +40,34 @@ def index():
             Folder.is_deleted.is_(False)
         )
     else:
-        doc_query = Document.query.filter(
-            Document.uploaded_by == current_user.id,
-            Document.is_deleted.is_(False)
+        doc_query = (
+            Document.query
+            .outerjoin(
+                DocumentShare,
+                Document.id == DocumentShare.document_id
+            )
+            .filter(
+                Document.is_deleted.is_(False),
+                or_(
+                    Document.uploaded_by == current_user.id,
+                    DocumentShare.shared_with_id == current_user.id
+                )
+            )
+            .distinct()
         )
+
         folder_query = Folder.query.filter(
             Folder.created_by == current_user.id,
             Folder.is_deleted.is_(False)
         )
 
-    # ------------------------------
+    # ==================================================
     # BASIC STATS
-    # ------------------------------
+    # ==================================================
     total_docs = doc_query.count()
-    active_docs = doc_query.filter_by(is_active=True).count()
-    archived_docs = doc_query.filter_by(is_active=False).count()
+    active_docs = doc_query.filter(Document.is_active.is_(True)).count()
+    archived_docs = doc_query.filter(Document.is_active.is_(False)).count()
+
     total_users = User.query.count()
     total_folders = folder_query.count()
 
@@ -62,9 +76,9 @@ def index():
         Document.created_at >= one_week_ago
     ).count()
 
-    # ------------------------------
+    # ==================================================
     # EXPIRING DOCS
-    # ------------------------------
+    # ==================================================
     in_30_days = datetime.utcnow().date() + timedelta(days=30)
     expiring_docs = (
         doc_query
@@ -77,9 +91,9 @@ def index():
         .all()
     )
 
-    # ------------------------------
+    # ==================================================
     # RECENT DOCS
-    # ------------------------------
+    # ==================================================
     recent_docs = (
         doc_query
         .order_by(Document.created_at.desc())
@@ -87,9 +101,9 @@ def index():
         .all()
     )
 
-    # ------------------------------
-    # RECENT FOLDERS (🔥 FIXED)
-    # ------------------------------
+    # ==================================================
+    # RECENT FOLDERS
+    # ==================================================
     recent_folders = (
         folder_query
         .filter(Folder.parent_id.is_(None))
@@ -98,9 +112,9 @@ def index():
         .all()
     )
 
-    # ------------------------------
+    # ==================================================
     # RECENT ACTIVITIES
-    # ------------------------------
+    # ==================================================
     if current_user.is_admin:
         recent_activities = (
             ActivityLog.query
@@ -117,9 +131,9 @@ def index():
             .all()
         )
 
-    # ------------------------------
-    # UPLOAD TREND
-    # ------------------------------
+    # ==================================================
+    # UPLOAD TREND (LAST 10 DAYS)
+    # ==================================================
     today = datetime.utcnow().date()
     start_date = today - timedelta(days=9)
 
@@ -146,9 +160,9 @@ def index():
         d = (start_date + timedelta(days=i)).strftime("%Y-%m-%d")
         uploads_per_day.append((d, uploads_map.get(d, 0)))
 
-    # ------------------------------
+    # ==================================================
     # FILE TYPE DISTRIBUTION
-    # ------------------------------
+    # ==================================================
     raw_types = (
         doc_query
         .with_entities(Document.file_type, func.count(Document.id))
@@ -170,9 +184,9 @@ def index():
     if not type_distribution:
         type_distribution = [("other", 1)]
 
-    # ------------------------------
+    # ==================================================
     # NOTIFICATIONS
-    # ------------------------------
+    # ==================================================
     if current_user.is_admin:
         unread_notifications = (
             Notification.query
@@ -191,9 +205,9 @@ def index():
             .all()
         )
 
-    # ------------------------------
+    # ==================================================
     # RENDER
-    # ------------------------------
+    # ==================================================
     return render_template(
         "dashboard/index.html",
         total_docs=total_docs,

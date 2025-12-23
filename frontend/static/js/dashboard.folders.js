@@ -2,7 +2,6 @@
 // GLOBAL CLIPBOARD
 // ==================================================
 let clipboard = JSON.parse(sessionStorage.getItem("clipboard")) || null;
-let pasteBtn = null;
 let deleteModal = null;
 
 // ==================================================
@@ -15,12 +14,6 @@ function saveClipboard() {
 function clearClipboard() {
   clipboard = null;
   sessionStorage.removeItem("clipboard");
-  updatePasteButton();
-}
-
-function updatePasteButton() {
-  if (!pasteBtn) return;
-  pasteBtn.disabled = clipboard === null;
 }
 
 function showError(msg) {
@@ -32,13 +25,28 @@ function showSuccess(msg) {
 }
 
 // ==================================================
+// CREATE FOLDER (SHARED LOGIC)
+// ==================================================
+function openCreateFolderModal(parentId = null) {
+  const modalEl = document.getElementById("createFolderModal");
+  if (!modalEl) return showError("Create folder modal not found");
+
+  const parentInput = modalEl.querySelector('input[name="parent_id"]');
+  if (parentInput) {
+    parentInput.value = parentId || "";
+  }
+
+  bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+// ==================================================
 // DELETE MODAL HANDLER
 // ==================================================
 function openDeleteModal(type, id) {
   const modalEl = document.getElementById("deleteModal");
   if (!modalEl) return showError("Delete modal not found");
 
-  modalEl.dataset.type = type; // folder | document
+  modalEl.dataset.type = type;
   modalEl.dataset.id = id;
 
   deleteModal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -55,8 +63,31 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('input[name="csrf_token"]')?.value ||
     "";
 
-  pasteBtn = document.getElementById("pasteBtn");
-  updatePasteButton();
+  // ==================================================
+  // SELECT ALL CHECKBOX
+  // ==================================================
+  const selectAll = document.getElementById("selectAll");
+  const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+
+  function updateBulkDeleteState() {
+    const checked = document.querySelectorAll(".selectItem:checked").length;
+    if (bulkDeleteBtn) bulkDeleteBtn.disabled = checked === 0;
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener("change", () => {
+      document.querySelectorAll(".selectItem").forEach(cb => {
+        cb.checked = selectAll.checked;
+      });
+      updateBulkDeleteState();
+    });
+  }
+
+  document.body.addEventListener("change", (e) => {
+    if (e.target.classList.contains("selectItem")) {
+      updateBulkDeleteState();
+    }
+  });
 
   // ==================================================
   // DELETE MODAL BUTTONS
@@ -67,10 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (moveBtn && deleteBtn && modalEl) {
 
-    // MOVE TO RECYCLE BIN (SOFT DELETE)
     moveBtn.onclick = () => {
       const { type, id } = modalEl.dataset;
-
       const url =
         type === "folder"
           ? `/documents/folders/${id}/bin`
@@ -85,12 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(() => showError());
     };
 
-    // PERMANENT DELETE
     deleteBtn.onclick = () => {
       if (!confirm("This action cannot be undone. Continue?")) return;
 
       const { type, id } = modalEl.dataset;
-
       const url =
         type === "folder"
           ? `/documents/folders/${id}/delete`
@@ -107,56 +134,74 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // PASTE REQUEST
+  // ⭐ FAVORITE TOGGLE (DOCUMENT + FOLDER)
   // ==================================================
-  function sendPasteRequest(url, payload) {
-    fetch(url, {
+  document.body.addEventListener("click", (e) => {
+    const favBtn = e.target.closest(".favorite-toggle");
+    if (!favBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const type = favBtn.dataset.type; // document | folder
+    const id = favBtn.dataset.id;
+    const icon = favBtn.querySelector("i");
+
+    fetch(`/favorites/${type}/${id}/toggle`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "X-CSRFToken": csrfToken
-      },
-      body: JSON.stringify(payload)
+      }
     })
       .then(r => r.json())
       .then(d => {
-        if (d.success) {
-          clearClipboard();
-          location.reload();
+        if (!d.success) return showError(d.error);
+
+        // toggle icon instantly
+        if (icon.classList.contains("bi-star")) {
+          icon.classList.remove("bi-star");
+          icon.classList.add("bi-star-fill", "text-warning");
         } else {
-          showError(d.error);
+          icon.classList.remove("bi-star-fill", "text-warning");
+          icon.classList.add("bi-star");
         }
       })
       .catch(() => showError());
-  }
+  });
 
   // ==================================================
-  // SINGLE CLICK HANDLER (FOLDER + DOCUMENT)
+  // SINGLE CLICK HANDLER (DOC + FOLDER ACTIONS)
   // ==================================================
   document.body.addEventListener("click", (e) => {
 
-    /* ---------- DOCUMENT ACTIONS ---------- */
+    // ---------- DOCUMENT ----------
     const docEl = e.target.closest("[data-doc-action]");
     if (docEl) {
       e.preventDefault();
-      e.stopPropagation();
 
       const docId = Number(docEl.dataset.docId);
       const action = docEl.dataset.docAction;
 
-      if (action === "delete") {
-        openDeleteModal("document", docId);
+      if (action === "archive") {
+        if (!confirm("Archive this document?")) return;
+
+        fetch(`/documents/${docId}/archive`, {
+          method: "POST",
+          headers: { "X-CSRFToken": csrfToken }
+        })
+          .then(r => r.json())
+          .then(d => d.success ? location.reload() : showError(d.error))
+          .catch(() => showError());
         return;
       }
 
       clipboard = { type: "document", action, id: docId };
       saveClipboard();
-      updatePasteButton();
       showSuccess(`Document ready to ${action}. Open target folder and click Paste.`);
       return;
     }
 
-    /* ---------- FOLDER ACTIONS ---------- */
+    // ---------- FOLDER ----------
     const folderEl = e.target.closest("[data-folder-action]");
     if (!folderEl) return;
 
@@ -168,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (action === "copy" || action === "move") {
       clipboard = { type: "folder", action, id: folderId };
       saveClipboard();
-      updatePasteButton();
       showSuccess(`Folder ready to ${action}. Open target folder and click Paste.`);
       return;
     }
@@ -176,21 +220,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (action === "paste") {
       if (!clipboard) return showError("Clipboard is empty");
 
-      const targetParentId = folderId;
+      const url =
+        clipboard.type === "folder"
+          ? `/documents/folders/${clipboard.id}/${clipboard.action}`
+          : `/documents/${clipboard.id}/${clipboard.action}`;
 
-      if (clipboard.type === "folder") {
-        sendPasteRequest(
-          `/documents/folders/${clipboard.id}/${clipboard.action}`,
-          { parent_id: targetParentId }
-        );
-      }
-
-      if (clipboard.type === "document") {
-        sendPasteRequest(
-          `/documents/${clipboard.id}/${clipboard.action}`,
-          { parent_id: targetParentId }
-        );
-      }
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({ parent_id: folderId })
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            clearClipboard();
+            location.reload();
+          } else {
+            showError(d.error);
+          }
+        })
+        .catch(() => showError());
       return;
     }
 
@@ -198,10 +250,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const newName = prompt("Enter new folder name:");
       if (!newName) return;
 
-      sendPasteRequest(
-        `/documents/folders/${folderId}/rename`,
-        { name: newName }
-      );
+      fetch(`/documents/folders/${folderId}/rename`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({ name: newName })
+      })
+        .then(r => r.json())
+        .then(d => d.success ? location.reload() : showError(d.error))
+        .catch(() => showError());
       return;
     }
 
@@ -211,30 +270,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==================================================
-  // TOP PASTE BUTTON
+  // + FOLDER BUTTON
   // ==================================================
-  if (pasteBtn) {
-    pasteBtn.addEventListener("click", () => {
-      if (!clipboard) return;
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const targetParentId = urlParams.get("folder")
-        ? Number(urlParams.get("folder"))
-        : null;
-
-      if (clipboard.type === "folder") {
-        sendPasteRequest(
-          `/documents/folders/${clipboard.id}/${clipboard.action}`,
-          { parent_id: targetParentId }
-        );
-      }
-
-      if (clipboard.type === "document") {
-        sendPasteRequest(
-          `/documents/${clipboard.id}/${clipboard.action}`,
-          { parent_id: targetParentId }
-        );
-      }
+  document.querySelectorAll('[data-bs-target="#createFolderModal"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const params = new URLSearchParams(window.location.search);
+      const parentId = params.get("folder");
+      openCreateFolderModal(parentId ? Number(parentId) : null);
     });
-  }
+  });
+
 });

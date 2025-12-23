@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Favorite Documents - SmartDMS{% endblock %}
+{% block title %}Favorites - SmartDMS{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-4">Favorite Documents</h1>
+<h1 class="h4 mb-4">Favorites</h1>
 
-<div class="card shadow-sm">
+<!-- =========================
+     FAVORITE DOCUMENTS
+========================= -->
+<div class="card shadow-sm mb-4">
     <div class="card-body">
 
-        <p class="text-muted mb-3">
-            Documents you have marked as favorites.
-        </p>
+        <h5 class="mb-3">Favorite Documents</h5>
 
         <table class="table table-sm align-middle">
             <thead>
@@ -21,16 +22,50 @@
                 </tr>
             </thead>
             <tbody>
-                {% for doc in favorites %}
+                {% for doc in documents %}
                 <tr>
                     <td>{{ doc.title }}</td>
                     <td>{{ doc.file_type|upper if doc.file_type else '-' }}</td>
-                    <td>{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '-' }}</td>
+                    <td>{{ doc.created_at|ist if doc.created_at else '-' }}</td>
                 </tr>
                 {% else %}
                 <tr>
                     <td colspan="3" class="text-muted text-center">
                         No favorite documents yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<!-- =========================
+     FAVORITE FOLDERS
+========================= -->
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <h5 class="mb-3">Favorite Folders</h5>
+
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Added On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for folder in folders %}
+                <tr>
+                    <td>{{ folder.name }}</td>
+                    <td>{{ folder.created_at|ist if folder.created_at else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2" class="text-muted text-center">
+                        No favorite folders yet.
                     </td>
                 </tr>
                 {% endfor %}

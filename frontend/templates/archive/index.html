@@ -1,35 +1,48 @@
 {% extends "base.html" %}
-
 {% block title %}Archived Documents - SmartDMS{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-4">Archived Documents</h1>
+<h1 class="h4 mb-3">Archived Documents</h1>
 
 <div class="card shadow-sm">
-    <div class="card-body">
+    <div class="card-body table-responsive">
 
-        <p class="text-muted mb-3">
-            All documents that have been archived are listed here.
-        </p>
-
-        <table class="table table-sm align-middle">
-            <thead>
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
                 <tr>
                     <th>Title</th>
+                    <th>Category</th>
                     <th>Type</th>
                     <th>Archived On</th>
+                    <th class="text-end">Action</th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for doc in documents %}
                 <tr>
                     <td>{{ doc.title }}</td>
+                    <td>{{ doc.category or '-' }}</td>
                     <td>{{ doc.file_type|upper if doc.file_type else '-' }}</td>
-                    <td>{{ doc.updated_at.strftime('%Y-%m-%d') if doc.updated_at else '-' }}</td>
+                    <td>{{ doc.updated_at.strftime('%Y-%m-%d') }}</td>
+
+                    <td class="text-end">
+                        <form method="post" action="{{ url_for('document.restore_view', document_id=doc.id) }}"
+                            class="d-inline">
+                            <!-- ✅ Proper CSRF handling -->
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                onclick="return confirm('Unarchive this document?')">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                Unarchive
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="3" class="text-muted text-center">
+                    <td colspan="5" class="text-center text-muted py-4">
                         No archived documents found.
                     </td>
                 </tr>

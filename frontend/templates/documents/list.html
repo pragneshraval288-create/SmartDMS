@@ -22,7 +22,6 @@
   </div>
 
   <div class="d-flex gap-2">
-    <!-- 🔥 ADDED -->
     <button class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled data-bs-toggle="modal"
       data-bs-target="#deleteModal">
       Delete Selected
@@ -36,10 +35,6 @@
       href="{{ url_for('document.upload', folder=active_folder.id if active_folder else None) }}">
       Upload
     </a>
-
-    <button class="btn btn-sm btn-outline-secondary" id="pasteBtn" disabled>
-      Paste
-    </button>
   </div>
 </div>
 
@@ -49,15 +44,14 @@
     <table class="table align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <!-- 🔥 ADDED -->
           <th width="40">
             <input type="checkbox" id="selectAll">
           </th>
-
           <th>Title</th>
           <th>Type</th>
           <th>Tags</th>
           <th>Uploaded</th>
+          <th width="60" class="text-center">⭐</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
@@ -69,7 +63,6 @@
         {% if item.type == "folder" %}
         {% set folder = item.obj %}
         <tr>
-          <!-- 🔥 ADDED -->
           <td>
             <input type="checkbox" class="selectItem" data-type="folder" data-id="{{ folder.id }}">
           </td>
@@ -84,6 +77,15 @@
           <td class="text-muted">Folder</td>
           <td>-</td>
           <td>{{ folder.created_at.strftime('%Y-%m-%d') }}</td>
+
+          <!-- ⭐ FOLDER FAVORITE -->
+          <td class="text-center">
+            <button class="btn btn-sm btn-link p-0 favorite-toggle" data-type="folder" data-id="{{ folder.id }}"
+              title="Toggle favorite">
+              <i
+                class="bi {% if folder.favorited_by|length > 0 %}bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
+            </button>
+          </td>
 
           <td class="text-end">
             <div class="dropdown">
@@ -130,10 +132,11 @@
                   <hr class="dropdown-divider">
                 </li>
 
-                <!-- 🔥 CHANGED (modal trigger) -->
-                <button type="button" class="dropdown-item text-danger" data-folder-action="delete" data-folder-id="{{ folder.id }}">
-                  Delete
-                </button>
+                <li>
+                  <button type="button" class="dropdown-item text-danger" data-folder-action="delete"
+                    data-folder-id="{{ folder.id }}">
+                    Delete
+                  </button>
                 </li>
               </ul>
             </div>
@@ -145,7 +148,6 @@
         {% if item.type == "document" %}
         {% set doc = item.obj %}
         <tr>
-          <!-- 🔥 ADDED -->
           <td>
             <input type="checkbox" class="selectItem" data-type="document" data-id="{{ doc.id }}">
           </td>
@@ -161,6 +163,15 @@
           <td>{{ doc.tags or '-' }}</td>
           <td>{{ doc.created_at.strftime('%Y-%m-%d') }}</td>
 
+          <!-- ⭐ DOCUMENT FAVORITE -->
+          <td class="text-center">
+            <button class="btn btn-sm btn-link p-0 favorite-toggle" data-type="document" data-id="{{ doc.id }}"
+              title="Toggle favorite">
+              <i
+                class="bi {% if doc.favorited_by|length > 0 %}bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
+            </button>
+          </td>
+
           <td class="text-end">
             <div class="dropdown">
               <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
@@ -168,7 +179,6 @@
               </button>
 
               <ul class="dropdown-menu dropdown-menu-end">
-              
                 {% if doc.file_type in ['pdf','png','jpg','jpeg'] %}
                 <li>
                   <a class="dropdown-item" target="_blank" href="{{ url_for('document.preview', document_id=doc.id) }}">
@@ -176,53 +186,58 @@
                   </a>
                 </li>
                 {% endif %}
-              
+
                 <li>
                   <a class="dropdown-item" href="{{ url_for('document.download', document_id=doc.id) }}">
                     Download
                   </a>
                 </li>
-              
-                <!-- ✅ ADDED BACK -->
+
                 <li>
                   <a class="dropdown-item" href="{{ url_for('document.detail', document_id=doc.id) }}">
                     Edit
                   </a>
                 </li>
-              
+
                 <li>
                   <a class="dropdown-item" href="{{ url_for('document.detail', document_id=doc.id) }}#share">
                     Share
                   </a>
                 </li>
-              
+
                 <li>
                   <hr class="dropdown-divider">
                 </li>
-              
+
                 <li>
                   <a href="#" class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="copy">
                     Copy
                   </a>
                 </li>
-              
+
                 <li>
                   <a href="#" class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="move">
                     Move
                   </a>
                 </li>
-              
+
+                <li>
+                  <button type="button" class="dropdown-item text-warning" data-doc-id="{{ doc.id }}"
+                    data-doc-action="archive">
+                    Archive
+                  </button>
+                </li>
+
                 <li>
                   <hr class="dropdown-divider">
                 </li>
-              
+
                 <li>
-                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
-                    data-type="document" data-id="{{ doc.id }}">
+                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal" data-type="document" data-id="{{ doc.id }}">
                     Delete
                   </button>
                 </li>
-              
               </ul>
             </div>
           </td>
@@ -231,7 +246,7 @@
 
         {% else %}
         <tr>
-          <td colspan="6" class="text-center text-muted py-4">
+          <td colspan="7" class="text-center text-muted py-4">
             No folders or documents found.
           </td>
         </tr>
@@ -240,6 +255,5 @@
     </table>
   </div>
 </div>
-
 
 {% endblock %}
