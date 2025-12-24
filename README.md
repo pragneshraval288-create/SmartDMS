@@ -1,246 +1,218 @@
-# SmartDMS Enterprise
+SmartDMS Enterprise
+Smart Python-Powered Document Management System
+================================================
 
-High-level Document Management System for learning / internship demo.
+SmartDMS is a secure, enterprise-inspired, web-based Document Management System
+built using Python and Flask. It is designed for organizations and academic use
+cases that require centralized document storage, role-based access control,
+audit trails, and secure authentication.
 
-## Features Implemented
+This project is developed as a BCA Final Year Project and internship demonstration,
+with a strong focus on security, scalability, and clean architecture.
 
-- User authentication (Admin, Manager, Employee)
-- Role-based access control
-- Secure document upload with multiple file types
-- Document metadata (title, description, tags, category, version, type, uploader, timestamps)
-- Versioning with history
-- Advanced search, filters and sorting
-- Document preview (PDF/image)
-- Soft delete / archive + recycle bin
-- Activity log / audit trail
-- Dashboard with stats & simple charts
-- Document sharing with other users (+ expiry)
-- Comments on documents
-- Basic notification center (in-app)
-- Bulk upload
-- Simple API endpoints (JSON) for documents
-- Workflow states (Pending / Approved / Rejected)
-- Expiry date for documents
+------------------------------------------------
+PROJECT OVERVIEW
+------------------------------------------------
+SmartDMS focuses on:
+- Secure authentication and authorization
+- Role-Based Access Control (RBAC)
+- Document lifecycle management
+- Folder-based organization
+- Activity logging and audit trails
 
-Some advanced enterprise items (cloud storage, MFA, backup automation, encryption) are included in a simplified, demo-friendly way in the code and structure so you can explain the architecture.
+The application follows an enterprise-style layered architecture with a clear
+separation between frontend, backend, business logic, and configuration.
 
-## How to run
+------------------------------------------------
+KEY FEATURES
+------------------------------------------------
 
-1. Create virtualenv (optional)
+Authentication & Security
+- User authentication (Login / Register).
+- Client-side AES encryption for passwords (CryptoJS).
+- Server-side password hashing (Werkzeug Security).
+- Session management using Flask-Login.
+- CSRF protection using Flask-WTF.
+- Role-based access control (Admin, Manager, Employee).
+- User approval workflow for non-admin users.
 
-```bash
-python -m venv venv
-venv\Scripts\activate   # Windows
-# or
-source venv/bin/activate  # Linux / macOS
-```
+Document Management
+- Secure document upload (PDF, Images, Office files, ZIP).
+- Metadata support: title, description, tags, category, version, uploader.
+- Document versioning with history.
+- Soft delete (Recycle Bin) with restore option.
+- In-app preview for PDFs and images.
+- Expiry dates for sensitive documents.
 
-2. Install dependencies
+Organization & Collaboration
+- Hierarchical folder structure.
+- Document sharing with other users (with expiry).
+- Comments on documents.
+- Favorites and bookmarking.
+- Advanced search and filtering.
 
-```bash
-pip install -r requirements.txt
-```
+System & Monitoring
+- Dashboard with statistics and charts.
+- Full activity log (audit trail) with IP address tracking.
+- In-app notification system.
+- Workflow states: Pending / Approved / Rejected.
 
-3. Set FLASK_APP and run
+------------------------------------------------
+SECURITY HIGHLIGHTS
+------------------------------------------------
+- Client-side AES encryption (CryptoJS) to protect passwords over the network.
+- Server-side decryption followed by secure password hashing.
+- CSRF protection for all critical forms.
+- Role-based authorization with approval checks.
+- Secure file upload with extension whitelist and size limits.
+- Activity logging for security auditing.
 
-```bash
-cd backend
-set FLASK_APP=app.py      # on Windows CMD
-# or PowerShell:  $env:FLASK_APP="app.py"
-flask run
-```
+------------------------------------------------
+TECH STACK
+------------------------------------------------
 
-App will be available at http://127.0.0.1:5000
+Backend:
+- Python 3.10+
+- Flask
+- SQLAlchemy ORM
+- Flask-Login
+- Flask-WTF
+- Flask-Migrate
 
-Default:
-- You must register first.
-- To make a user admin or manager, open `instance/smartdms_enterprise.db` in a SQLite editor and change `role` column to `admin` or `manager`.
-=======
-=======
->>>>>>> 50748fa6679c7bf55fce5dcc89e5e18f26cb5562
-# SmartDMS  
-**Smart Python-Powered Document Management System**  
+Database:
+- SQLite (Local Development)
+- MySQL (Production Ready)
 
-A secure, web-based document management application built with Python and Flask—ideal for organizations seeking centralized storage, role-based access control, folder organization, document lifecycle management, and audit trails.
+Frontend:
+- HTML5
+- CSS3
+- JavaScript
+- Bootstrap
 
----
+Security & Utilities:
+- Werkzeug Security
+- CryptoJS (Frontend Encryption)
+- PyCryptodome (Backend Decryption)
+- OpenSSL (HTTPS Testing)
 
-## Table of Contents  
-1. [Project Overview](#project-overview)  
-2. [Key Features](#key-features)  
-3. [Tech Stack](#tech-stack)  
-4. [Project Structure](#project-structure)  
-5. [Getting Started](#getting-started)  
-6. [Usage](#usage)  
-7. [User Roles](#user-roles)  
-8. [Future Enhancements](#future-enhancements)  
-9. [Contributing](#contributing)  
-10. [License & Contact](#license--contact)  
+------------------------------------------------
+PROJECT STRUCTURE
+------------------------------------------------
 
----
-
-## Project Overview  
-SmartDMS is an academic-grade document management system focused on:  
-- Secure user authentication (password hashing, session management)  
-- Role-based access control (Admin vs. User)  
-- Folder-based hierarchy and document organization  
-- Document versioning, soft-delete, archiving, and restoration  
-- Activity logging and in-app notifications for auditing  
-
-Its clean architecture separates models, services, routes, and templates, making it modular and easy to extend.
-
----
-
-## Key Features  
-
-Authentication & Authorization  
-• Login by username or email  
-• Secure password hashing (Werkzeug)  
-• Flask-Login session management  
-• RBAC:  
-  - **Admin**: Full access (users, documents, settings)  
-  - **User**: Access own and shared documents  
-
-Document Management  
-• Upload documents with metadata  
-• Version control (basic)  
-• Soft-delete → archive → restore workflow  
-• Favorite documents  
-
-Folder Management  
-• Hierarchical folder/view navigation  
-• Dashboard with folder tree  
-
-Notifications & Logs  
-• User activity logs (audit trail)  
-• In-app notifications for critical actions  
-
-Additional  
-• User profile management  
-• Secure server-side storage (optionally encrypted)  
-
----
-
-## Tech Stack  
-
-| Layer       | Technology                   |
-|-------------|------------------------------|
-| Backend     | Python 3.x, Flask            |
-| ORM         | Flask-SQLAlchemy, Alembic    |
-| Auth & Sec. | Flask-Login, Werkzeug, cryptography |
-| Frontend    | HTML5, CSS3, JavaScript, Bootstrap |
-| Database    | MySQL (PyMySQL)              |
-
----
-
-## Project Structure  
-
-```
 SmartDMS/
 ├── backend/
-│   ├── models/        # SQLAlchemy models
-│   ├── services/      # Business logic
-│   ├── routes/        # Flask blueprints
-│   ├── forms.py       # WTForms definitions
-│   ├── config.py      # App configuration
-│   └── app.py         # Flask app factory
+│   ├── models/          Database Models
+│   ├── routes/          Flask Blueprints (Controllers)
+│   ├── services/        Business Logic
+│   ├── app.py           App Factory & Application Setup
+│   ├── config.py        Configuration Settings
+│   └── extensions.py    DB, LoginManager, CSRF, etc.
 ├── frontend/
-│   ├── static/        # CSS, JS, images
-│   └── templates/     # Jinja2 templates
-├── storage/           # Uploaded files
-├── run.py             # Entry point
-├── requirements.txt   # Python dependencies
-└── README.md
-```
+│   ├── static/          CSS, JS, Images
+│   └── templates/       HTML Templates
+├── instance/            Local SQLite Database
+├── storage/             Uploaded Document Storage
+├── requirements.txt     Python Dependencies
+└── README.txt           Project Documentation
 
----
+------------------------------------------------
+HOW TO RUN (INSTALLATION)
+------------------------------------------------
 
-## Getting Started  
+1. Prerequisites
+- Python 3.10 or higher
+- Virtual Environment (venv)
+- MySQL (optional, for production)
 
-### Prerequisites  
-- Python ≥ 3.10  
-- MySQL Server  
-- Virtual environment tool (venv, conda, etc.)  
+------------------------------------------------
+2. Setup Virtual Environment
 
-### Installation  
-
-```bash
-# 1. Clone repository
-git clone https://github.com/your-org/SmartDMS.git
-cd SmartDMS
-
-# 2. Create & activate virtualenv
+Windows:
 python -m venv venv
-source venv/bin/activate      # Linux/macOS
-venv\Scripts\activate.bat     # Windows
+venv\Scripts\activate
 
-# 3. Install dependencies
+Linux / macOS:
+python3 -m venv venv
+source venv/bin/activate
+
+------------------------------------------------
+3. Install Dependencies
+
 pip install -r requirements.txt
 
-# 4. Configure environment variables
-#    create a `.env` file in the project root:
-SECRET_KEY=your_secret_key
-DATABASE_URL=mysql+pymysql://user:pass@localhost/smartdms
+------------------------------------------------
+4. Database Setup
 
-# 5. Database migrations
+Run the following commands only once for initial setup:
+
 flask db init
-flask db migrate
+
+Create migration:
+flask db migrate -m "Initial migration"
+
+Apply migration:
 flask db upgrade
 
-# 6. Run the app
-python run.py
-```
+------------------------------------------------
+5. Run the Application
 
-Access the app at: http://127.0.0.1:5000
+Windows (CMD):
+set FLASK_APP=backend.app
+set FLASK_DEBUG=1
+flask run
 
----
+Windows (PowerShell):
+$env:FLASK_APP="backend.app"
+$env:FLASK_DEBUG="1"
+flask run
 
-## Usage  
+Linux / macOS:
+export FLASK_APP=backend.app
+export FLASK_DEBUG=1
+flask run
 
-1. **Register** as a new user or log in with Admin credentials.  
-2. **Create folders** in the dashboard.  
-3. **Upload documents**, assign to folders, add descriptions or tags.  
-4. **Manage versions**, archive or restore as needed.  
-5. **View activity logs** under “Reports” for audit trails.  
-6. **Configure user roles** and permissions via Admin → Roles.
+------------------------------------------------
+APPLICATION URL
+------------------------------------------------
+http://127.0.0.1:5000
 
----
+------------------------------------------------
+USER ROLES & ACCESS
+------------------------------------------------
 
-## User Roles  
+Default Behavior:
+1. Register a new user using the Sign-Up page.
+2. New users are assigned the Employee role by default.
+3. Non-admin users require admin approval before login.
 
-| Role  | Capabilities                                       |
-|-------|----------------------------------------------------|
-| Admin | Manage users, roles, documents; view all logs      |
-| User  | Upload/manage own docs; view shared or permitted ones |
+Admin / Manager Setup:
+To promote a user:
+1. Open the database using a DB tool (SQLite Browser or MySQL client).
+2. Locate the users table.
+3. Update the role column to 'admin' or 'manager'.
+4. Restart the application.
 
----
+------------------------------------------------
+CONTRIBUTING
+------------------------------------------------
 
-## Future Enhancements  
+1. Fork the repository.
+2. Create a new feature branch:
+   git checkout -b feat/NewFeature
+3. Commit your changes:
+   git commit -m "Add new feature"
+4. Push to the branch:
+   git push origin feat/NewFeature
+5. Open a Pull Request.
 
-- Advanced full-text search & filters  
-- Enforced file-level encryption at rest  
-- Multi-factor authentication (MFA)  
-- Integration with AWS S3 / Google Cloud Storage  
-- Granular, per-document permissions & sharing links  
+------------------------------------------------
+LICENSE & CONTACT
+------------------------------------------------
 
----
+Version: 1.0  
+Developer: Pragnesh Raval  
+Course: BCA Final Year  
+Email: pragneshraval288@gmail.com  
 
-## Contributing  
-
-1. Fork the repository  
-2. Create a feature branch (`git checkout -b feat/YourFeature`)  
-3. Commit your changes & push (`git push origin feat/YourFeature`)  
-4. Open a Pull Request with a description of your changes  
-
-Please follow the existing code style and include relevant tests where applicable.
-
----
-
-## License & Contact  
-
-**Version:** 1.0  
-**Last Updated:** December 2025  
-**Developer:** Pragnesh Raval (BCA Final Year)  
-
-For questions, reach out at: pragneshraval288@gmail.com
-
+This project is developed for academic and learning purposes.
+All rights reserved © 2025 Pragnesh Raval.
