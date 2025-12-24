@@ -18,12 +18,12 @@ Flask-WTF==1.2.2
 email-validator==2.2.0
 
 # ===============================
-# Security & Encryption (UPDATED)
+# Security & Encryption
 # ===============================
 cryptography==43.0.0
-# Niche wali line AES Decryption ke liye zaroori hai (Frontend password logic)
-pycryptodome==3.20.0  
-# Niche wali line HTTPS (ssl_context='adhoc') ke liye zaroori hai
+# AES Decryption (CryptoJS frontend compatibility)
+pycryptodome==3.20.0
+# HTTPS / SSL support (adhoc / OpenSSL)
 pyOpenSSL==24.0.0
 
 # ===============================
