@@ -1,30 +1,29 @@
 import os
-from datetime import timezone
+from datetime import timezone, datetime
 from zoneinfo import ZoneInfo
 
 from flask import Flask, redirect, url_for
-from flask_login import current_user
+# Niche wali line mein 'logout_user' add kiya hai taaki purana session clear ho jaye
+from flask_login import current_user, logout_user 
 
+# Configuration imports
 from .config import Config
-from .extensions import db, login_manager, csrf
+from .extensions import db, login_manager, csrf, migrate 
 from .models import Notification
 
 # --------------------------------------------------
-# CORE ROUTES
+# BLUEPRINT IMPORTS
 # --------------------------------------------------
+# Core Blueprints
 from .routes.auth import auth_bp
 from .routes.document import document_bp
 from .routes.folder import folder_bp
 from .routes.dashboard import dashboard_bp
 from .routes.api import api_bp
 from .routes.profile import profile_bp
-
-# 🔥 RECYCLE BIN
 from .routes.recycle_bin import recycle_bin_bp
 
-# --------------------------------------------------
-# SIDEBAR MODULES
-# --------------------------------------------------
+# Sidebar / Modules Blueprints
 from .routes.archive import archive_bp
 from .routes.sharing import sharing_bp
 from .routes.favorites import favorites_bp
@@ -38,24 +37,28 @@ from .routes.security import security_bp
 from .routes.notifications import notifications_bp
 
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(
         __name__,
         template_folder="../frontend/templates",
         static_folder="../frontend/static"
     )
 
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
 
     # --------------------------------------------------
     # ENSURE REQUIRED FOLDERS
     # --------------------------------------------------
-    project_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), os.pardir)
-    )
-
-    os.makedirs(os.path.join(project_root, "instance"), exist_ok=True)
-    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    base_dir = os.path.dirname(os.path.dirname(__file__)) 
+    
+    # Ensure instance folder exists
+    os.makedirs(os.path.join(base_dir, "instance"), exist_ok=True)
+    
+    # Ensure upload folder exists
+    upload_path = app.config.get("UPLOAD_FOLDER", "uploads")
+    if not os.path.isabs(upload_path):
+        upload_path = os.path.join(base_dir, upload_path)
+    os.makedirs(upload_path, exist_ok=True)
 
     # --------------------------------------------------
     # INIT EXTENSIONS
@@ -63,26 +66,31 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+    # migrate.init_app(app, db) 
 
-    # 🔐 IMPORTANT
+    # Agar user login nahi hai to wo yahan redirect hoga
     login_manager.login_view = "auth.login"
+    login_manager.login_message_category = "info"
 
     # --------------------------------------------------
-    # CREATE TABLES
+    # DATABASE SETUP
     # --------------------------------------------------
     with app.app_context():
         db.create_all()
 
     # --------------------------------------------------
-    # JINJA FILTER: IST
+    # JINJA FILTER: IST (Timezone)
     # --------------------------------------------------
     @app.template_filter("ist")
     def ist_time(dt):
         if not dt:
             return "-"
+        
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+            
         return (
-            dt.replace(tzinfo=timezone.utc)
-            .astimezone(ZoneInfo("Asia/Kolkata"))
+            dt.astimezone(ZoneInfo("Asia/Kolkata"))
             .strftime("%Y-%m-%d %H:%M")
         )
 
@@ -102,50 +110,41 @@ def create_app():
                 .limit(10)
                 .all()
             )
-        else:
-            unread = []
-
-        return dict(unread_notifications=unread)
+            return dict(unread_notifications=unread)
+        return dict(unread_notifications=[])
 
     # --------------------------------------------------
     # REGISTER BLUEPRINTS
     # --------------------------------------------------
+    blueprints = [
+        auth_bp, document_bp, folder_bp, profile_bp, dashboard_bp, api_bp,
+        recycle_bin_bp, archive_bp, sharing_bp, favorites_bp, users_bp,
+        roles_bp, reports_bp, approvals_bp, settings_bp, storage_bp,
+        security_bp, notifications_bp
+    ]
 
-    # CORE
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(document_bp)
-    app.register_blueprint(folder_bp)
-    app.register_blueprint(profile_bp)
-    app.register_blueprint(dashboard_bp)  # ✅ FIXED (no url_prefix here)
-    app.register_blueprint(api_bp)
-
-    # 🔥 RECYCLE BIN
-    app.register_blueprint(recycle_bin_bp)
-
-    # SIDEBAR
-    app.register_blueprint(archive_bp)
-    app.register_blueprint(sharing_bp)
-    app.register_blueprint(favorites_bp)
-    app.register_blueprint(users_bp)
-    app.register_blueprint(roles_bp)
-    app.register_blueprint(reports_bp)
-    app.register_blueprint(approvals_bp)
-    app.register_blueprint(settings_bp)
-    app.register_blueprint(storage_bp)
-    app.register_blueprint(security_bp)
-    app.register_blueprint(notifications_bp)
+    for bp in blueprints:
+        app.register_blueprint(bp)
 
     # --------------------------------------------------
-    # HOME (ROOT FIX)
+    # HOME ROUTE LOGIC (ROOT URL)
     # --------------------------------------------------
     @app.route("/")
     def home():
-        # 🔐 ALWAYS show login first
+        """
+        FIX: Force logout to ensure Login Page appears.
+        Jab aap project run karenge, ye purana session clear karega
+        aur seedha Login Page kholega.
+        """
+        # Step 1: Agar koi purana user logged in hai, use logout karo
+        logout_user()
+        
+        # Step 2: Login page par bhejo
         return redirect(url_for("auth.login"))
 
     return app
 
-
+# App Creation
 app = create_app()
 
 if __name__ == "__main__":

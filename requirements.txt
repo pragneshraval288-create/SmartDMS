@@ -18,10 +18,13 @@ Flask-WTF==1.2.2
 email-validator==2.2.0
 
 # ===============================
-# Security
+# Security & Encryption (UPDATED)
 # ===============================
 cryptography==43.0.0
-cffi==1.16.0   # 🔥 REQUIRED for cryptography (_cffi_backend fix)
+# Niche wali line AES Decryption ke liye zaroori hai (Frontend password logic)
+pycryptodome==3.20.0  
+# Niche wali line HTTPS (ssl_context='adhoc') ke liye zaroori hai
+pyOpenSSL==24.0.0
 
 # ===============================
 # Timezone support (IMPORTANT for Windows)

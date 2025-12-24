@@ -63,7 +63,6 @@
         background: rgba(255, 255, 255, 0.92);
     }
 
-    /* 🔐 PASSWORD EYE STYLE */
     .password-wrapper {
         position: relative;
     }
@@ -85,44 +84,39 @@
     .toggle-password:hover {
         color: #2563eb;
     }
+
+    .security-badge {
+        font-size: 12px;
+        color: #10b981;
+        margin-top: 5px;
+        text-align: center;
+    }
 </style>
 
 <div class="login-wrapper">
 
-    <!-- LEFT SIDE -->
     <div class="left-section">
         <h1>Document<br>Management Portal</h1>
-        <p>
-            Securely access, organize, and share your important documents anytime,
-            anywhere. Your files are protected.
-        </p>
+        <p>Securely access, organize, and share your important documents anytime, anywhere.</p>
 
         <div class="icon-row">
-            <div class="icon-box">
-                <i class="bi bi-folder-fill fs-4 text-white"></i>
-            </div>
-            <div class="icon-box">
-                <i class="bi bi-search fs-4 text-white"></i>
-            </div>
-            <div class="icon-box">
-                <i class="bi bi-cloud-arrow-up-fill fs-4 text-white"></i>
-            </div>
+            <div class="icon-box"><i class="bi bi-folder-fill fs-4 text-white"></i></div>
+            <div class="icon-box"><i class="bi bi-search fs-4 text-white"></i></div>
+            <div class="icon-box"><i class="bi bi-cloud-arrow-up-fill fs-4 text-white"></i></div>
         </div>
     </div>
 
-    <!-- RIGHT SIDE LOGIN -->
     <div>
         <div class="login-card shadow-lg">
-            <h2 class="text-center mb-3 text-white">
-                Login to Your Account
-            </h2>
+            <h2 class="text-center mb-3 text-white">Login to Your Account</h2>
 
-            <form method="POST" action="{{ url_for('auth.login') }}" onsubmit="encryptPassword()">
+            <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+
                 {{ form.hidden_tag() }}
 
                 {% if form.errors %}
                 <div class="alert alert-danger">
-                    <ul class="mb-0">
+                    <ul class="mb-0 ps-3">
                         {% for field, errors in form.errors.items() %}
                         {% for error in errors %}
                         <li>{{ error }}</li>
@@ -137,12 +131,14 @@
                     {{ form.username_or_email(class="form-control") }}
                 </div>
 
-                <!-- 🔐 PASSWORD WITH EYE -->
                 <div class="mb-3">
                     {{ form.password.label(class="form-label") }}
                     <div class="password-wrapper">
                         {{ form.password(class="form-control", id="password") }}
                         <i class="bi bi-eye-slash toggle-password" data-target="password"></i>
+                    </div>
+                    <div class="security-badge">
+                        🔐 Secured with HTTPS + AES Encryption
                     </div>
                 </div>
 
@@ -151,58 +147,71 @@
                     {{ form.remember.label(class="form-check-label text-white") }}
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">
                     Login
                 </button>
             </form>
 
             <p class="text-center mt-3 text-white">
-                Forgot Password?
-                <a href="{{ url_for('auth.forgot_password') }}" class="text-warning">
-                    Click here
-                </a>
+                Forgot Password? <a href="{{ url_for('auth.forgot_password') }}" class="text-warning">Click here</a>
             </p>
-
             <p class="text-center mt-2 text-white">
-                New here?
-                <a href="{{ url_for('auth.register') }}" class="text-warning">
-                    Create an account
-                </a>
+                New here? <a href="{{ url_for('auth.register') }}" class="text-warning">Create an account</a>
             </p>
         </div>
     </div>
 
 </div>
 
-<!-- 👁️ SHOW / HIDE PASSWORD -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 <script>
+    // 1. Password Visibility Toggle
     document.addEventListener("click", function (e) {
         if (!e.target.classList.contains("toggle-password")) return;
-
         const input = document.getElementById(e.target.dataset.target);
         if (!input) return;
 
         if (input.type === "password") {
             input.type = "text";
-            e.target.classList.remove("bi-eye-slash");
-            e.target.classList.add("bi-eye");
+            e.target.classList.replace("bi-eye-slash", "bi-eye");
         } else {
             input.type = "password";
-            e.target.classList.remove("bi-eye");
-            e.target.classList.add("bi-eye-slash");
+            e.target.classList.replace("bi-eye", "bi-eye-slash");
         }
     });
-</script>
 
-<!-- 🔐 ENCRYPTION SCRIPT -->
-<script>
-    function encryptPassword() {
-        let field = document.getElementById("password");
-        if (!field || !field.value) return;
+    // 2. Encryption Logic
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // Default submit roko
 
-        let encrypted = btoa(field.value.split("").reverse().join(""));
-        field.value = encrypted;
-    }
+        const passwordField = document.getElementById("password");
+        const plainPassword = passwordField.value;
+
+        // Make sure password isn't empty before encrypting
+        if (plainPassword) {
+            try {
+                // Must match Python Backend Key
+                const secretKey = "MY_SECRET_KEY_123";
+
+                // Encrypt
+                const encryptedPassword = CryptoJS.AES.encrypt(plainPassword, secretKey).toString();
+
+                // Update field value
+                passwordField.value = encryptedPassword;
+                console.log("Password encrypted successfully.");
+
+            } catch (err) {
+                console.error("Encryption failed:", err);
+                // Agar fail ho jaye, toh plain text hi jane do (backup plan)
+            }
+        }
+
+        // 3. Final Submit
+        // `this.submit()` calls the form's native submit method, 
+        // bypassing this event listener to prevent infinite loops.
+        this.submit();
+    });
 </script>
 
 {% endblock %}

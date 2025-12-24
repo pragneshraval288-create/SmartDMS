@@ -3,10 +3,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
+from flask_migrate import Migrate  # 👈 1. ADD THIS IMPORT
 
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-
 
 # ------------------------------------------------------
 # EXTENSIONS
@@ -14,6 +14,7 @@ from sqlalchemy.engine import Engine
 db = SQLAlchemy()
 login_manager = LoginManager()
 csrf = CSRFProtect()
+migrate = Migrate()  # 👈 2. DEFINE THIS OBJECT
 
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "warning"
