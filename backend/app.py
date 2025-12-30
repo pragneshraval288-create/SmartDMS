@@ -2,19 +2,21 @@ import os
 from datetime import timezone, datetime
 from zoneinfo import ZoneInfo
 
+# 🔥 VERY IMPORTANT: .env MUST be loaded before Config
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, redirect, url_for
-# Niche wali line mein 'logout_user' add kiya hai taaki purana session clear ho jaye
-from flask_login import current_user, logout_user 
+from flask_login import current_user, logout_user
 
 # Configuration imports
 from .config import Config
-from .extensions import db, login_manager, csrf, migrate 
+from .extensions import db, login_manager, csrf, migrate
 from .models import Notification
 
 # --------------------------------------------------
 # BLUEPRINT IMPORTS
 # --------------------------------------------------
-# Core Blueprints
 from .routes.auth import auth_bp
 from .routes.document import document_bp
 from .routes.folder import folder_bp
@@ -23,7 +25,6 @@ from .routes.api import api_bp
 from .routes.profile import profile_bp
 from .routes.recycle_bin import recycle_bin_bp
 
-# Sidebar / Modules Blueprints
 from .routes.archive import archive_bp
 from .routes.sharing import sharing_bp
 from .routes.favorites import favorites_bp
@@ -44,16 +45,19 @@ def create_app(config_class=Config):
         static_folder="../frontend/static"
     )
 
+    # --------------------------------------------------
+    # LOAD CONFIG
+    # --------------------------------------------------
     app.config.from_object(config_class)
 
     # --------------------------------------------------
     # ENSURE REQUIRED FOLDERS
     # --------------------------------------------------
-    base_dir = os.path.dirname(os.path.dirname(__file__)) 
-    
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+
     # Ensure instance folder exists
     os.makedirs(os.path.join(base_dir, "instance"), exist_ok=True)
-    
+
     # Ensure upload folder exists
     upload_path = app.config.get("UPLOAD_FOLDER", "uploads")
     if not os.path.isabs(upload_path):
@@ -66,9 +70,8 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
-    # migrate.init_app(app, db) 
+    # migrate.init_app(app, db)
 
-    # Agar user login nahi hai to wo yahan redirect hoga
     login_manager.login_view = "auth.login"
     login_manager.login_message_category = "info"
 
@@ -85,10 +88,10 @@ def create_app(config_class=Config):
     def ist_time(dt):
         if not dt:
             return "-"
-        
+
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
-            
+
         return (
             dt.astimezone(ZoneInfo("Asia/Kolkata"))
             .strftime("%Y-%m-%d %H:%M")
@@ -111,6 +114,7 @@ def create_app(config_class=Config):
                 .all()
             )
             return dict(unread_notifications=unread)
+
         return dict(unread_notifications=[])
 
     # --------------------------------------------------
@@ -127,24 +131,22 @@ def create_app(config_class=Config):
         app.register_blueprint(bp)
 
     # --------------------------------------------------
-    # HOME ROUTE LOGIC (ROOT URL)
+    # HOME ROUTE (FORCE LOGIN)
     # --------------------------------------------------
     @app.route("/")
     def home():
         """
-        FIX: Force logout to ensure Login Page appears.
-        Jab aap project run karenge, ye purana session clear karega
-        aur seedha Login Page kholega.
+        Force logout to ensure Login Page appears.
         """
-        # Step 1: Agar koi purana user logged in hai, use logout karo
         logout_user()
-        
-        # Step 2: Login page par bhejo
         return redirect(url_for("auth.login"))
 
     return app
 
-# App Creation
+
+# --------------------------------------------------
+# APP ENTRY POINT
+# --------------------------------------------------
 app = create_app()
 
 if __name__ == "__main__":

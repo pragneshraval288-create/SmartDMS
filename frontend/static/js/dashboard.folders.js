@@ -89,49 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ==================================================
-  // DELETE MODAL BUTTONS
-  // ==================================================
-  const moveBtn = document.getElementById("moveToBinBtn");
-  const deleteBtn = document.getElementById("permanentDeleteBtn");
-  const modalEl = document.getElementById("deleteModal");
 
-  if (moveBtn && deleteBtn && modalEl) {
-
-    moveBtn.onclick = () => {
-      const { type, id } = modalEl.dataset;
-      const url =
-        type === "folder"
-          ? `/documents/folders/${id}/bin`
-          : `/documents/${id}/bin`;
-
-      fetch(url, {
-        method: "POST",
-        headers: { "X-CSRFToken": csrfToken }
-      })
-        .then(r => r.json())
-        .then(d => d.success ? location.reload() : showError(d.error))
-        .catch(() => showError());
-    };
-
-    deleteBtn.onclick = () => {
-      if (!confirm("This action cannot be undone. Continue?")) return;
-
-      const { type, id } = modalEl.dataset;
-      const url =
-        type === "folder"
-          ? `/documents/folders/${id}/delete`
-          : `/documents/${id}/delete`;
-
-      fetch(url, {
-        method: "POST",
-        headers: { "X-CSRFToken": csrfToken }
-      })
-        .then(r => r.json())
-        .then(d => d.success ? location.reload() : showError(d.error))
-        .catch(() => showError());
-    };
-  }
 
   // ==================================================
   // ⭐ FAVORITE TOGGLE (DOCUMENT + FOLDER)

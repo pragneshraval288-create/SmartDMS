@@ -7,9 +7,14 @@
 <div class="card shadow-sm">
   <div class="card-body">
 
-    <form method="POST" action="{{ url_for('document.upload') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ url_for('document.upload', folder=active_folder) }}" enctype="multipart/form-data">
 
       {{ form.hidden_tag() }}
+
+      <!-- 🔥 IMPORTANT: PASS FOLDER ID -->
+      {% if active_folder %}
+      <input type="hidden" name="folder_id" value="{{ active_folder }}">
+      {% endif %}
 
       <!-- 🔴 FORM ERRORS -->
       {% if form.errors %}

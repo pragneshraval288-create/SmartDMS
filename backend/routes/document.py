@@ -45,6 +45,25 @@ def _user_can_view(doc: Document) -> bool:
         shared_with_id=current_user.id
     ).first() is not None
 
+# =========================
+# HELPERS (DOCUMENT DELETE)
+# =========================
+def _hard_delete_document(doc: Document):
+    DocumentVersion.query.filter_by(
+        document_id=doc.id
+    ).delete(synchronize_session=False)
+
+    DocumentComment.query.filter_by(
+        document_id=doc.id
+    ).delete(synchronize_session=False)
+
+    DocumentShare.query.filter_by(
+        document_id=doc.id
+    ).delete(synchronize_session=False)
+
+    db.session.delete(doc)
+
+
 
 # ==================================================
 # LIST DOCUMENTS + FOLDERS
@@ -58,7 +77,7 @@ def list_documents():
     active_folder = Folder.query.get(folder_id) if folder_id else None
 
     # -------------------------
-    # FOLDERS (FIXED)
+    # FOLDERS
     # -------------------------
     folder_query = Folder.query.filter(
         Folder.deleted_at.is_(None)
@@ -83,27 +102,25 @@ def list_documents():
     ).all()
 
     # -------------------------
-    # DOCUMENTS (ALREADY CORRECT)
+    # DOCUMENTS (FIXED)
     # -------------------------
     doc_query = Document.query.filter(
         Document.is_deleted.is_(False)
     )
 
+    # 🔐 Ownership / Sharing
     if not current_user.is_admin:
-        doc_query = (
-            doc_query
-            .outerjoin(
-                DocumentShare,
-                DocumentShare.document_id == Document.id
-            )
-            .filter(
-                or_(
-                    Document.uploaded_by == current_user.id,
-                    DocumentShare.shared_with_id == current_user.id
+        doc_query = doc_query.filter(
+            or_(
+                Document.uploaded_by == current_user.id,
+                Document.id.in_(
+                    db.session.query(DocumentShare.document_id)
+                    .filter(DocumentShare.shared_with_id == current_user.id)
                 )
             )
         )
 
+    # 📁 STRICT folder filtering (🔥 FIX)
     if active_folder:
         doc_query = doc_query.filter(
             Document.folder_id == active_folder.id
@@ -113,6 +130,7 @@ def list_documents():
             Document.folder_id.is_(None)
         )
 
+    # 🔍 Search
     if form.search.data:
         like = f"%{form.search.data.strip()}%"
         doc_query = doc_query.filter(
@@ -122,6 +140,7 @@ def list_documents():
             )
         )
 
+    # 📦 Status
     status = form.status.data or "active"
     doc_query = doc_query.filter(
         Document.is_active.is_(status != "archived")
@@ -145,6 +164,7 @@ def list_documents():
         active_folder=active_folder,
         form=form
     )
+
 
 
 
@@ -173,12 +193,18 @@ def my_documents():
 @document_bp.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload():
+    # 📁 Current folder from URL
     active_folder_id = request.args.get("folder", type=int)
 
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         tags = request.form.get("tags", "").strip()
+
+        # 🔥 FIX: folder_id fallback
         folder_id = request.form.get("folder_id", type=int)
+        if folder_id is None:
+            folder_id = active_folder_id
+
         files = request.files.getlist("files")
 
         if not title or not files:
@@ -189,17 +215,19 @@ def upload():
             if not file or file.filename == "":
                 continue
 
-            doc_title = title if i == 0 else f"{title} ({i+1})"
+            doc_title = title if i == 0 else f"{title} ({i + 1})"
+
             create_document(
                 user=current_user,
                 title=doc_title,
                 tags=tags,
                 file_storage=file,
-                folder_id=folder_id
+                folder_id=folder_id  # ✅ Correct folder now
             )
 
         flash("Documents uploaded successfully.", "success")
 
+        # 🔁 Redirect back to same folder
         if folder_id:
             return redirect(
                 url_for("document.list_documents", folder=folder_id)
@@ -212,6 +240,7 @@ def upload():
         form=UploadForm(),
         active_folder=active_folder_id
     )
+
 
 
 # =========================
@@ -582,14 +611,18 @@ def move_document_to_bin(document_id):
     if doc.uploaded_by != current_user.id and not (
         current_user.is_admin or current_user.is_manager
     ):
-        abort(403)
+        return jsonify(success=False, error="Permission denied"), 403
 
     doc.is_deleted = True
     doc.deleted_at = datetime.utcnow()
     db.session.commit()
 
-    flash("Document moved to Recycle Bin.", "warning")
-    return redirect(url_for("document.list_documents"))
+    log_activity(
+        "document_bin",
+        details=f"Moved document '{doc.title}' to recycle bin"
+    )
+
+    return jsonify(success=True)
 
 
 # =========================
@@ -603,15 +636,22 @@ def delete_document(document_id):
     if doc.uploaded_by != current_user.id and not (
         current_user.is_admin or current_user.is_manager
     ):
-        abort(403)
+        return jsonify(success=False, error="Permission denied"), 403
 
-    doc.is_deleted = True
-    doc.deleted_at = datetime.utcnow()
-    db.session.commit()
+    try:
+        _hard_delete_document(doc)
+        db.session.commit()
 
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(success=False, error=str(e)), 500
 
-    flash("Document deleted.", "success")
-    return redirect(url_for("document.list_documents"))
+    log_activity(
+        "document_permanent_delete",
+        details=f"Permanently deleted document '{doc.title}'"
+    )
+
+    return jsonify(success=True)
 
 
 # =========================
@@ -622,7 +662,7 @@ def delete_document(document_id):
 def bulk_move_to_bin():
     items = request.form.get("items")
     if not items:
-        abort(400)
+        return jsonify(success=False), 400
 
     data = json.loads(items)
 
@@ -643,8 +683,8 @@ def bulk_move_to_bin():
         doc.deleted_at = datetime.utcnow()
 
     db.session.commit()
-    flash("Selected documents moved to Recycle Bin.", "warning")
-    return redirect(url_for("document.list_documents"))
+    return jsonify(success=True)
+
 
 
 # =========================
@@ -655,7 +695,7 @@ def bulk_move_to_bin():
 def bulk_delete_documents():
     items = request.form.get("items")
     if not items:
-        abort(400)
+        return jsonify(success=False), 400
 
     data = json.loads(items)
 
@@ -672,8 +712,7 @@ def bulk_delete_documents():
         ):
             continue
 
-        db.session.delete(doc)
+        _hard_delete_document(doc)
 
     db.session.commit()
-    flash("Selected documents permanently deleted.", "danger")
-    return redirect(url_for("document.list_documents"))
+    return jsonify(success=True)

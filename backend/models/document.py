@@ -1,5 +1,6 @@
 from datetime import datetime
 from ..extensions import db
+from ..services.encryption_service import EncryptionService
 
 
 # ======================
@@ -10,30 +11,17 @@ class Document(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    title = db.Column(
-        db.String(255),
-        nullable=False,
-        index=True
-    )
-
-    tags = db.Column(db.String(255), nullable=True)
-
-    category = db.Column(
-        db.String(100),
-        nullable=True,
-        index=True
-    )
+    # 🔐 ENCRYPTED COLUMNS (stored encrypted in DB)
+    _title = db.Column("title", db.String(255), nullable=False, index=True)
+    _tags = db.Column("tags", db.String(255), nullable=True)
+    _category = db.Column("category", db.String(100), nullable=True, index=True)
 
     filename = db.Column(db.String(255), nullable=False)
     stored_name = db.Column(db.String(255), nullable=False)
     filepath = db.Column(db.String(500), nullable=False)
     file_type = db.Column(db.String(20), nullable=True)
 
-    version = db.Column(
-        db.Integer,
-        nullable=False,
-        default=1
-    )
+    version = db.Column(db.Integer, nullable=False, default=1)
 
     is_active = db.Column(db.Boolean, default=True)
 
@@ -44,7 +32,6 @@ class Document(db.Model):
         index=True
     )
 
-
     # 🔥 RECYCLE BIN FIELDS
     is_deleted = db.Column(
         db.Boolean,
@@ -53,10 +40,7 @@ class Document(db.Model):
         index=True
     )
 
-    deleted_at = db.Column(
-        db.DateTime,
-        nullable=True
-    )
+    deleted_at = db.Column(db.DateTime, nullable=True)
 
     uploaded_by = db.Column(
         db.Integer,
@@ -129,10 +113,40 @@ class Document(db.Model):
         lazy="select"
     )
 
+    # ======================
+    # 🔐 TRANSPARENT ENCRYPTION
+    # ======================
+
+    @property
+    def title(self):
+        return EncryptionService.decrypt_text(self._title)
+
+    @title.setter
+    def title(self, value):
+        self._title = EncryptionService.encrypt_text(value)
+
+    @property
+    def tags(self):
+        return EncryptionService.decrypt_text(self._tags)
+
+    @tags.setter
+    def tags(self, value):
+        self._tags = EncryptionService.encrypt_text(value)
+
+    @property
+    def category(self):
+        return EncryptionService.decrypt_text(self._category)
+
+    @category.setter
+    def category(self, value):
+        self._category = EncryptionService.encrypt_text(value)
+
+    # ======================
+    # SAFE REPR (🔥 FIX)
+    # ======================
     def __repr__(self):
         return (
             f"<Document id={self.id} "
-            f"title='{self.title}' "
             f"deleted={self.is_deleted}>"
         )
 
@@ -152,10 +166,7 @@ class DocumentVersion(db.Model):
         index=True
     )
 
-    version = db.Column(
-        db.Integer,
-        nullable=False
-    )
+    version = db.Column(db.Integer, nullable=False)
 
     stored_name = db.Column(db.String(255), nullable=False)
     filepath = db.Column(db.String(500), nullable=False)
