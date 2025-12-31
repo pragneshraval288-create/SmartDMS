@@ -113,7 +113,7 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/architecture.png" alt="System Architecture" width="700">
+![System Architecture](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/architecture.png?raw=true)
 
 *High-level system architecture showing the flow of data and security layers*
 
@@ -313,7 +313,7 @@ http://127.0.0.1:5000
 
 ### 🔐 Login Page
 
-<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/login.png" alt="SmartDMS Login Page" width="800">
+![SmartDMS Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/login.png?raw=true)
 
 *Secure authentication interface with HTTPS + AES encryption*
 
@@ -323,7 +323,7 @@ http://127.0.0.1:5000
 
 ### 📊 Dashboard
 
-<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/dashboard.png" alt="SmartDMS Dashboard" width="800">
+![SmartDMS Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/dashboard.png?raw=true)
 
 *Main user dashboard with analytics, file type distribution, and system resources*
 
@@ -333,7 +333,7 @@ http://127.0.0.1:5000
 
 ### 📋 All Documents
 
-<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/documents.png" alt="Document Management View" width="800">
+![Document Management View](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/documents.png?raw=true)
 
 *Comprehensive document management view with folders, files, and actions*
 
@@ -343,7 +343,7 @@ http://127.0.0.1:5000
 
 ### 📤 Upload Documents
 
-<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/upload.png" alt="Document Upload Page" width="800">
+![Document Upload Page](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/upload.png?raw=true)
 
 *Simple and secure document upload interface with support for multiple file types*
 
