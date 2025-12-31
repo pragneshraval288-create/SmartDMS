@@ -309,39 +309,31 @@ http://127.0.0.1:5000
 
 ## 🖼️ Screenshots
 
-<div align="center">
-
 ### 🔐 Login Page
-
-<img src="frontend/static/screenshots/login.png" alt="SmartDMS Login Page" width="800"/>
+![Login Page](frontend/static/screenshots/login.png)
 
 *Secure authentication interface with HTTPS + AES encryption*
 
 ---
 
 ### 📊 Dashboard
-
-<img src="./frontend/static/screenshots/dashboard.png" alt="SmartDMS Dashboard" width="800"/>
+![Dashboard](frontend/static/screenshots/dashboard.png)
 
 *Main user dashboard with analytics, file type distribution, and system resources*
 
 ---
 
 ### 📋 All Documents
-
-<img src="frontend/static/screenshots/documents.png" alt="Document Management View" width="800"/>
+![All Documents](frontend/static/screenshots/documents.png)
 
 *Comprehensive document management view with folders, files, and actions*
 
 ---
 
 ### 📤 Upload Documents
-
-<img src="frontend/static/screenshots/upload.png" alt="Document Upload Page" width="800"/>
+![Upload Documents](frontend/static/screenshots/upload.png)
 
 *Simple and secure document upload interface with support for multiple file types*
-
-</div>
 
 ---
 
