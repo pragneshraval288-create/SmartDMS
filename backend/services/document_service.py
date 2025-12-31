@@ -18,6 +18,7 @@ def create_document(
     tags: str | None,
     file_storage: FileStorage,
     folder_id: int | None = None,
+    status: str = "uploaded",   # 🔥 FIX: default status
 ) -> Document:
 
     # ------------------------------
@@ -42,6 +43,7 @@ def create_document(
         folder_id=folder_id,
         version=1,
         is_active=True,
+        status=status,                 # 🔥 FIX APPLIED HERE
         created_at=datetime.utcnow(),
     )
 

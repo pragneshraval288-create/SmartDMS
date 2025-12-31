@@ -133,9 +133,11 @@ def rename_folder(folder_id):
     db.session.commit()
 
     log_activity(
-        "folder_rename",
+        action="folder_rename",
+        document_id=None,
         details=f"Renamed folder to '{new_name}'"
     )
+
 
     return jsonify(success=True)
 
@@ -172,9 +174,11 @@ def move_folder(folder_id):
     db.session.commit()
 
     log_activity(
-        "folder_move",
+        action="folder_move",
+        document_id=None,
         details=f"Moved folder '{folder.name}'"
     )
+
 
     return jsonify(success=True)
 
@@ -202,9 +206,11 @@ def copy_folder(folder_id):
     db.session.commit()
 
     log_activity(
-        "folder_copy",
+        action="folder_copy",
+        document_id=None,
         details=f"Copied folder '{folder.name}'"
     )
+
 
     return jsonify(success=True)
 
@@ -246,7 +252,7 @@ def move_folder_to_bin(folder_id):
     if not _owns_folder(folder):
         return jsonify(success=False, error="Permission denied"), 403
 
-    def _soft_delete_folder(f):
+    def _soft_delete(f):
         f.is_deleted = True
         f.deleted_at = datetime.utcnow()
 
@@ -255,21 +261,23 @@ def move_folder_to_bin(folder_id):
             d.deleted_at = datetime.utcnow()
 
         for child in f.children:
-            _soft_delete_folder(child)
+            _soft_delete(child)
 
-    _soft_delete_folder(folder)
+    _soft_delete(folder)
     db.session.commit()
 
     log_activity(
-        "folder_bin",
+        action="folder_bin",
+        document_id=None,
         details=f"Moved folder '{folder.name}' to recycle bin"
     )
 
     return jsonify(success=True)
 
 
+
 # =========================
-# DELETE FOLDER (PERMANENT)
+# PERMANENT DELETE FOLDER
 # =========================
 @folder_bp.route("/<int:folder_id>/delete", methods=["POST"])
 @login_required
@@ -282,39 +290,33 @@ def delete_folder(folder_id):
     try:
         _hard_delete_folder(folder)
         db.session.commit()
-
     except Exception as e:
         db.session.rollback()
-        return jsonify(
-            success=False,
-            error=str(e)
-        ), 500
+        return jsonify(success=False, error=str(e)), 500
 
     log_activity(
-        "folder_permanent_delete",
+        action="folder_permanent_delete",
+        document_id=None,
         details=f"Permanently deleted folder '{folder.name}'"
     )
+
 
     return jsonify(success=True)
 
 
 # =========================
-# BULK MOVE FOLDERS TO RECYCLE BIN
+# BULK MOVE TO RECYCLE BIN (FIXED ✅)
 # =========================
 @folder_bp.route("/bulk/bin", methods=["POST"])
 @login_required
 def bulk_folder_move_to_bin():
-    items = request.form.get("items")
-    if not items:
-        abort(400)
-
-    data = json.loads(items)
+    data = request.get_json(silent=True) or []
 
     for item in data:
-        if item["type"] != "folder":
+        if item.get("type") != "folder":
             continue
 
-        folder = Folder.query.get(item["id"])
+        folder = Folder.query.get(item.get("id"))
         if not folder or not _owns_folder(folder):
             continue
 
@@ -326,31 +328,26 @@ def bulk_folder_move_to_bin():
             doc.deleted_at = datetime.utcnow()
 
     db.session.commit()
-    flash("Selected folders moved to Recycle Bin.", "warning")
-    return redirect(url_for("document.list_documents"))
+    return jsonify(success=True)
+
 
 # =========================
-# BULK PERMANENT DELETE FOLDERS
+# BULK PERMANENT DELETE (FIXED ✅)
 # =========================
 @folder_bp.route("/bulk/delete", methods=["POST"])
 @login_required
 def bulk_folder_delete():
-    items = request.form.get("items")
-    if not items:
-        abort(400)
-
-    data = json.loads(items)
+    data = request.get_json(silent=True) or []
 
     for item in data:
-        if item["type"] != "folder":
+        if item.get("type") != "folder":
             continue
 
-        folder = Folder.query.get(item["id"])
+        folder = Folder.query.get(item.get("id"))
         if not folder or not _owns_folder(folder):
             continue
 
-        db.session.delete(folder)
+        _hard_delete_folder(folder)
 
     db.session.commit()
-    flash("Selected folders permanently deleted.", "danger")
-    return redirect(url_for("document.list_documents"))
+    return jsonify(success=True)

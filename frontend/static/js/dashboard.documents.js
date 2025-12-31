@@ -43,7 +43,7 @@ document.getElementById("permanentDeleteBtn")?.addEventListener("click", async (
 
 
 // ===================================
-// CORE DELETE HANDLER
+// CORE DELETE HANDLER (JSON SAFE 🔥)
 // ===================================
 async function performDelete(action) {
 
@@ -70,11 +70,21 @@ async function performDelete(action) {
     const res = await fetch(url, {
       method: "POST",
       headers: {
-        "X-CSRFToken": csrfToken   // 🔥 THIS WAS MISSING
+        "X-CSRFToken": csrfToken
       }
     });
 
-    const data = await res.json();
+    // 🔥 SAFE RESPONSE HANDLING
+    const text = await res.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error("Non-JSON response:", text);
+      alert("Server returned invalid response. Check backend route.");
+      return;
+    }
 
     if (!data.success) {
       alert(data.error || "Server error");
@@ -85,6 +95,6 @@ async function performDelete(action) {
 
   } catch (err) {
     console.error(err);
-    
+    alert("Request failed");
   }
 }

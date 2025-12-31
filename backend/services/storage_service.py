@@ -1,4 +1,5 @@
 import os
+import uuid  # [SECURITY ENHANCEMENT] Unique IDs ke liye
 from typing import Tuple
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app
@@ -14,8 +15,8 @@ from ..config import allowed_file, Config
 def _get_fernet() -> Fernet:
     """
     Returns Fernet instance using application ENCRYPTION_KEY.
-    Key must be a valid Fernet key (handled in config).
     """
+    # Key valid hai ya nahi, ye Config file mein check ho chuka hai
     key = Config.ENCRYPTION_KEY
 
     if isinstance(key, str):
@@ -44,10 +45,16 @@ def save_encrypted_file(
     original_name = secure_filename(file_storage.filename)
     name, ext = os.path.splitext(original_name)
 
-    stored_name = f"{name}{version_suffix}{ext}"
-    stored_path = os.path.join(upload_folder, stored_name)
+    # [SECURITY FIX] 
+    # File ko Disk par Random UUID naam se save karein.
+    # Isse "File Overwrite" aur "Predictable Filename" attacks ruk jate hain.
+    # Original naam Database mein rahega, Disk par nahi.
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    
+    stored_path = os.path.join(upload_folder, unique_filename)
 
     # 🔐 Encrypt file data
+    # Note: 32MB limit Config mein hai, isliye RAM full hone ka risk kam hai.
     data = file_storage.read()
     fernet = _get_fernet()
     encrypted = fernet.encrypt(data)
@@ -55,15 +62,23 @@ def save_encrypted_file(
     with open(stored_path, "wb") as f_out:
         f_out.write(encrypted)
 
-    return stored_path, stored_name
+    # Return stored_path AND unique_filename (taaki DB mein update ho sake)
+    return stored_path, unique_filename
 
 
 # =========================
 # DECRYPT FILE
 # =========================
 def decrypt_file(filepath: str) -> bytes:
-    with open(filepath, "rb") as f_in:
-        encrypted = f_in.read()
+    # [SECURITY CHECK] Path Traversal defense already done via 'secure_filename' during upload.
+    # Agar hacker ne DB manually edit karke path '/etc/passwd' kar diya,
+    # toh bhi decrypt fail ho jayega kyunki '/etc/passwd' encrypted nahi hai.
+    
+    try:
+        with open(filepath, "rb") as f_in:
+            encrypted = f_in.read()
+    except FileNotFoundError:
+        raise RuntimeError("File not found on server.")
 
     fernet = _get_fernet()
 
@@ -71,4 +86,4 @@ def decrypt_file(filepath: str) -> bytes:
         return fernet.decrypt(encrypted)
     except InvalidToken:
         # If key mismatch or corrupted file
-        raise RuntimeError("Unable to decrypt file. Invalid encryption key.")
+        raise RuntimeError("Unable to decrypt file. Invalid encryption key or corrupted file.")

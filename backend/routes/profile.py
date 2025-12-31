@@ -1,5 +1,9 @@
 import os
 import uuid
+import base64
+import hashlib
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
@@ -8,6 +12,46 @@ from ..extensions import db
 from ..models import User, ActivityLog
 
 profile_bp = Blueprint("profile", __name__, url_prefix="/profile")
+
+# ==========================================
+# 🔐 CRYPTOJS COMPATIBLE DECRYPTION LOGIC
+# (Same as auth.py to ensure consistency)
+# ==========================================
+def get_key_and_iv(password, salt, key_length=32, iv_length=16):
+    d = d_i = b''
+    while len(d) < key_length + iv_length:
+        d_i = hashlib.md5(d_i + password + salt).digest()
+        d += d_i
+    return d[:key_length], d[key_length:key_length+iv_length]
+
+def decrypt_cryptojs_aes(encrypted_text):
+    """
+    Decrypts a string encrypted by CryptoJS on the frontend.
+    Uses Config Key.
+    """
+    secret_key = current_app.config.get("FRONTEND_SECRET_KEY", "MY_SECRET_KEY_123")
+    
+    try:
+        if not encrypted_text:
+            return None
+            
+        encrypted_bytes = base64.b64decode(encrypted_text)
+        if encrypted_bytes[:8] != b'Salted__':
+            return None
+
+        salt = encrypted_bytes[8:16]
+        ciphertext = encrypted_bytes[16:]
+        
+        key, iv = get_key_and_iv(secret_key.encode('utf-8'), salt)
+        
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        decrypted_padded = cipher.decrypt(ciphertext)
+        decrypted = unpad(decrypted_padded, AES.block_size)
+        
+        return decrypted.decode('utf-8')
+
+    except Exception:
+        return None
 
 
 # ======================================================
@@ -23,7 +67,7 @@ def view_profile():
 
 
 # ======================================================
-# EDIT OWN PROFILE (FULL FEATURE)
+# EDIT OWN PROFILE (SECURED)
 # ======================================================
 @profile_bp.route("/edit", methods=["GET", "POST"])
 @login_required
@@ -34,9 +78,23 @@ def edit_profile():
         full_name = request.form.get("full_name", "").strip()
         email = request.form.get("email", "").strip()
 
-        old_password = request.form.get("old_password", "").strip()
-        new_password = request.form.get("new_password", "").strip()
-        confirm_password = request.form.get("confirm_password", "").strip()
+        # [SECURITY FIX] Read Raw values first
+        raw_old_pass = request.form.get("old_password", "").strip()
+        raw_new_pass = request.form.get("new_password", "").strip()
+        raw_confirm_pass = request.form.get("confirm_password", "").strip()
+
+        # [SECURITY FIX] Decrypt Passwords
+        # Old Password
+        dec_old = decrypt_cryptojs_aes(raw_old_pass)
+        old_password = dec_old if dec_old else raw_old_pass
+
+        # New Password
+        dec_new = decrypt_cryptojs_aes(raw_new_pass)
+        new_password = dec_new if dec_new else raw_new_pass
+
+        # Confirm Password
+        dec_confirm = decrypt_cryptojs_aes(raw_confirm_pass)
+        confirm_password = dec_confirm if dec_confirm else raw_confirm_pass
 
         profile_image = request.files.get("profile_image")
 
@@ -87,9 +145,12 @@ def edit_profile():
             if current_user.profile_image:
                 old_path = os.path.join(upload_dir, current_user.profile_image)
                 if os.path.exists(old_path):
-                    os.remove(old_path)
+                    try:
+                        os.remove(old_path)
+                    except Exception:
+                        pass
 
-            # save new image
+            # save new image (UUID is Safe ✅)
             filename = f"{uuid.uuid4().hex}{ext}"
             save_path = os.path.join(upload_dir, filename)
             profile_image.save(save_path)
@@ -97,8 +158,9 @@ def edit_profile():
             current_user.profile_image = filename
 
         # -------------------------
-        # PASSWORD CHANGE (OPTIONAL)
+        # PASSWORD CHANGE
         # -------------------------
+        # Logic check: agar teeno mein se koi bhi field bhari hai to password change process start karo
         if new_password or confirm_password or old_password:
 
             if not old_password:

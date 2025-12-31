@@ -1,65 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Document Approvals - SmartDMS{% endblock %}
+{% block title %}User Approvals - SmartDMS{% endblock %}
 
 {% block content %}
-<h1 class="h4 mb-4">Document Approvals</h1>
-
-<!-- =========================
-     DOCUMENT APPROVALS
-========================= -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-
-        <p class="text-muted mb-3">
-            Documents pending approval or already reviewed.
-        </p>
-
-        <table class="table table-sm align-middle">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Owner</th>
-                    <th>Status</th>
-                    <th>Submitted On</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doc in documents %}
-                <tr>
-                    <td>{{ doc.title }}</td>
-                    <td>{{ doc.owner.username if doc.owner else '-' }}</td>
-                    <td>
-                        <span class="badge 
-                        {% if doc.status == 'approved' %}bg-success
-                        {% elif doc.status == 'rejected' %}bg-danger
-                        {% else %}bg-warning text-dark{% endif %}">
-                            {{ doc.status|capitalize }}
-                        </span>
-                    </td>
-                    <td>{{ doc.created_at.strftime('%Y-%m-%d') if doc.created_at else '-' }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="text-muted text-center">
-                        No documents pending approval.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-    </div>
-</div>
-
-<!-- =========================
-     USER APPROVALS (NEW)
-========================= -->
-{% if users is defined and users|length > 0 %}
-<h2 class="h5 mb-3">User Registration Approvals</h2>
+<h1 class="h4 mb-4">User Registration Approvals</h1>
 
 <div class="card shadow-sm">
     <div class="card-body">
+
+        <p class="text-muted mb-3">
+            Users awaiting admin approval.
+        </p>
 
         <table class="table table-sm align-middle">
             <thead>
@@ -77,15 +28,27 @@
                     <td>{{ user.email }}</td>
                     <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
                     <td>
-                        <a href="{{ url_for('approvals.approve_user', user_id=user.id) }}"
-                            class="btn btn-sm btn-success">
-                            Approve
-                        </a>
+                        <form action="{{ url_for('approvals.approve_user', user_id=user.id) }}" method="POST"
+                            style="display:inline-block;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-success">
+                                Approve
+                            </button>
+                        </form>
 
-                        <a href="{{ url_for('approvals.reject_user', user_id=user.id) }}"
-                            class="btn btn-sm btn-outline-danger">
-                            Reject
-                        </a>
+                        <form action="{{ url_for('approvals.reject_user', user_id=user.id) }}" method="POST"
+                            style="display:inline-block; margin-left: 5px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                Reject
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        No pending user approvals.
                     </td>
                 </tr>
                 {% endfor %}
@@ -94,6 +57,4 @@
 
     </div>
 </div>
-{% endif %}
-
 {% endblock %}

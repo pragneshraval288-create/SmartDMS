@@ -1,16 +1,13 @@
 # backend/routes/documents.py
 from io import BytesIO
 from werkzeug.datastructures import FileStorage
-import json
 from datetime import datetime
-from ..services.storage_service import save_encrypted_file
 from flask import (
     Blueprint, render_template, redirect,
     url_for, flash, request, send_file, abort, jsonify
 )
 from flask_login import login_required, current_user
 from sqlalchemy import or_
-from io import BytesIO
 
 from ..extensions import db
 from ..models import (
@@ -28,12 +25,12 @@ from ..services.document_service import (
 )
 from ..services.activity_service import log_activity
 from ..services.notification_service import notify_user
-from ..services.storage_service import decrypt_file
+from ..services.storage_service import decrypt_file, save_encrypted_file
 
 document_bp = Blueprint("document", __name__, url_prefix="/documents")
 
 # =========================
-# HELPERS (DOCUMENT ONLY)
+# HELPERS
 # =========================
 def _user_can_view(doc: Document) -> bool:
     if current_user.is_admin:
@@ -45,24 +42,14 @@ def _user_can_view(doc: Document) -> bool:
         shared_with_id=current_user.id
     ).first() is not None
 
-# =========================
-# HELPERS (DOCUMENT DELETE)
-# =========================
-def _hard_delete_document(doc: Document):
-    DocumentVersion.query.filter_by(
-        document_id=doc.id
-    ).delete(synchronize_session=False)
 
-    DocumentComment.query.filter_by(
-        document_id=doc.id
-    ).delete(synchronize_session=False)
-
-    DocumentShare.query.filter_by(
-        document_id=doc.id
-    ).delete(synchronize_session=False)
-
-    db.session.delete(doc)
-
+def _user_owns_folder(folder_id):
+    if not folder_id:
+        return True
+    folder = Folder.query.get(folder_id)
+    if not folder:
+        return False
+    return current_user.is_admin or folder.created_by == current_user.id
 
 
 # ==================================================
@@ -74,41 +61,26 @@ def list_documents():
     form = DocumentFilterForm(request.args)
     folder_id = request.args.get("folder", type=int)
 
-    active_folder = Folder.query.get(folder_id) if folder_id else None
+    active_folder = None
+    if folder_id:
+        active_folder = Folder.query.get_or_404(folder_id)
+        if not current_user.is_admin and active_folder.created_by != current_user.id:
+            flash("Permission denied.", "danger")
+            return redirect(url_for("document.list_documents"))
 
-    # -------------------------
-    # FOLDERS
-    # -------------------------
-    folder_query = Folder.query.filter(
-        Folder.deleted_at.is_(None)
-    )
-
+    folder_query = Folder.query.filter(Folder.deleted_at.is_(None))
     if not current_user.is_admin:
-        folder_query = folder_query.filter(
-            Folder.created_by == current_user.id
-        )
+        folder_query = folder_query.filter(Folder.created_by == current_user.id)
 
     if active_folder:
-        folder_query = folder_query.filter(
-            Folder.parent_id == active_folder.id
-        )
+        folder_query = folder_query.filter(Folder.parent_id == active_folder.id)
     else:
-        folder_query = folder_query.filter(
-            Folder.parent_id.is_(None)
-        )
+        folder_query = folder_query.filter(Folder.parent_id.is_(None))
 
-    folders = folder_query.order_by(
-        Folder.created_at.asc()
-    ).all()
+    folders = folder_query.order_by(Folder.created_at.asc()).all()
 
-    # -------------------------
-    # DOCUMENTS (FIXED)
-    # -------------------------
-    doc_query = Document.query.filter(
-        Document.is_deleted.is_(False)
-    )
+    doc_query = Document.query.filter(Document.is_deleted.is_(False))
 
-    # 🔐 Ownership / Sharing
     if not current_user.is_admin:
         doc_query = doc_query.filter(
             or_(
@@ -120,39 +92,22 @@ def list_documents():
             )
         )
 
-    # 📁 STRICT folder filtering (🔥 FIX)
     if active_folder:
-        doc_query = doc_query.filter(
-            Document.folder_id == active_folder.id
-        )
+        doc_query = doc_query.filter(Document.folder_id == active_folder.id)
     else:
-        doc_query = doc_query.filter(
-            Document.folder_id.is_(None)
-        )
+        doc_query = doc_query.filter(Document.folder_id.is_(None))
 
-    # 🔍 Search
     if form.search.data:
         like = f"%{form.search.data.strip()}%"
         doc_query = doc_query.filter(
-            or_(
-                Document.title.ilike(like),
-                Document.tags.ilike(like)
-            )
+            or_(Document.title.ilike(like), Document.tags.ilike(like))
         )
 
-    # 📦 Status
     status = form.status.data or "active"
-    doc_query = doc_query.filter(
-        Document.is_active.is_(status != "archived")
-    )
+    doc_query = doc_query.filter(Document.is_active.is_(status != "archived"))
 
-    documents = doc_query.order_by(
-        Document.created_at.desc()
-    ).all()
+    documents = doc_query.order_by(Document.created_at.desc()).all()
 
-    # -------------------------
-    # MERGE
-    # -------------------------
     items = (
         [{"type": "folder", "obj": f} for f in folders] +
         [{"type": "document", "obj": d} for d in documents]
@@ -164,9 +119,6 @@ def list_documents():
         active_folder=active_folder,
         form=form
     )
-
-
-
 
 # ==================================================
 # MY DOCUMENTS
@@ -180,11 +132,7 @@ def my_documents():
         .order_by(Document.created_at.desc())
         .all()
     )
-
-    return render_template(
-        "documents/my_documents.html",
-        documents=documents
-    )
+    return render_template("documents/my_documents.html", documents=documents)
 
 
 # =========================
@@ -193,20 +141,18 @@ def my_documents():
 @document_bp.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload():
-    # 📁 Current folder from URL
     active_folder_id = request.args.get("folder", type=int)
 
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         tags = request.form.get("tags", "").strip()
+        folder_id = request.form.get("folder_id", type=int) or active_folder_id
 
-        # 🔥 FIX: folder_id fallback
-        folder_id = request.form.get("folder_id", type=int)
-        if folder_id is None:
-            folder_id = active_folder_id
+        if folder_id and not _user_owns_folder(folder_id):
+            flash("Invalid folder selected.", "danger")
+            return redirect(request.url)
 
         files = request.files.getlist("files")
-
         if not title or not files:
             flash("Title and file required.", "danger")
             return redirect(request.url)
@@ -216,31 +162,19 @@ def upload():
                 continue
 
             doc_title = title if i == 0 else f"{title} ({i + 1})"
-
             create_document(
                 user=current_user,
                 title=doc_title,
                 tags=tags,
                 file_storage=file,
-                folder_id=folder_id  # ✅ Correct folder now
+                folder_id=folder_id,
+                status="uploaded"
             )
 
         flash("Documents uploaded successfully.", "success")
+        return redirect(url_for("document.list_documents", folder=folder_id) if folder_id else url_for("document.list_documents"))
 
-        # 🔁 Redirect back to same folder
-        if folder_id:
-            return redirect(
-                url_for("document.list_documents", folder=folder_id)
-            )
-
-        return redirect(url_for("document.list_documents"))
-
-    return render_template(
-        "documents/upload.html",
-        form=UploadForm(),
-        active_folder=active_folder_id
-    )
-
+    return render_template("documents/upload.html", form=UploadForm(), active_folder=active_folder_id)
 
 
 # =========================
@@ -258,21 +192,24 @@ def move_document(doc_id):
         return jsonify(success=False, error="Permission denied"), 403
 
     if doc.folder_id == target_folder_id:
-        return jsonify(
-            success=False,
-            error="Document already in this folder"
-        ), 400
+        return jsonify(success=False, error="Document already in this folder"), 400
+
+    # [SECURITY FIX] Verify target folder ownership
+    if target_folder_id and not _user_owns_folder(target_folder_id):
+        return jsonify(success=False, error="Cannot move to a folder you do not own"), 403
 
     doc.folder_id = target_folder_id
     db.session.commit()
 
-    # ✅ FIX: user_id REMOVED
     log_activity(
-        "document_move",
+        action="document_move",
+        document_id=doc.id,
         details=f"Moved document '{doc.title}'"
     )
 
+
     return jsonify(success=True)
+
 
 # =========================
 # COPY DOCUMENT
@@ -287,6 +224,10 @@ def copy_document(doc_id):
 
     if not _user_can_view(doc):
         return jsonify(success=False, error="Permission denied"), 403
+
+    # [SECURITY FIX] Verify target folder ownership
+    if target_folder_id and not _user_owns_folder(target_folder_id):
+        return jsonify(success=False, error="Cannot copy to a folder you do not own"), 403
 
     try:
         # decrypt original file
@@ -319,15 +260,18 @@ def copy_document(doc_id):
         db.session.commit()
 
         log_activity(
-            "document_copy",
+            action="document_copy",
+            document_id=new_doc.id,
             details=f"Copied document '{doc.title}'"
         )
+
 
         return jsonify(success=True)
 
     except Exception as e:
         db.session.rollback()
         return jsonify(success=False, error=str(e)), 500
+
 
 # =========================
 # DOCUMENT DETAIL
@@ -351,21 +295,11 @@ def detail(document_id):
         db.session.add(comment)
         db.session.commit()
         flash("Comment added.", "success")
-        return redirect(
-            url_for("document.detail", document_id=doc.id)
-        )
+        return redirect(url_for("document.detail", document_id=doc.id))
 
-    versions = DocumentVersion.query.filter_by(
-        document_id=doc.id
-    ).order_by(DocumentVersion.version.desc()).all()
-
-    comments = DocumentComment.query.filter_by(
-        document_id=doc.id
-    ).order_by(DocumentComment.created_at.desc()).all()
-
-    shares = DocumentShare.query.filter_by(
-        document_id=doc.id
-    ).all()
+    versions = DocumentVersion.query.filter_by(document_id=doc.id).order_by(DocumentVersion.version.desc()).all()
+    comments = DocumentComment.query.filter_by(document_id=doc.id).order_by(DocumentComment.created_at.desc()).all()
+    shares = DocumentShare.query.filter_by(document_id=doc.id).all()
 
     return render_template(
         "documents/detail.html",
@@ -407,16 +341,12 @@ def preview(document_id):
 
     if doc.file_type not in ("pdf", "png", "jpg", "jpeg"):
         flash("Preview not available for this file type.", "info")
-        return redirect(
-            url_for("document.detail", document_id=doc.id)
-        )
+        return redirect(url_for("document.detail", document_id=doc.id))
 
     data = decrypt_file(doc.filepath)
-    mime = (
-        "application/pdf"
-        if doc.file_type == "pdf"
-        else f"image/{'jpeg' if doc.file_type in ('jpg','jpeg') else 'png'}"
-    )
+    
+    # Explicit MIME types prevent sniffing attacks
+    mime = "application/pdf" if doc.file_type == "pdf" else f"image/{'jpeg' if doc.file_type in ('jpg','jpeg') else 'png'}"
 
     return send_file(BytesIO(data), mimetype=mime)
 
@@ -429,29 +359,18 @@ def preview(document_id):
 def update_file(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not (
-        current_user.is_manager or current_user.is_admin
-    ):
+    if doc.uploaded_by != current_user.id and not current_user.is_admin:
         flash("You are not allowed to update this document.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        return redirect(url_for("document.detail", document_id=document_id))
 
     file = request.files.get("file")
     if not file or file.filename == "":
-        flash("Please choose a file to upload.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        flash("Please choose a file.", "danger")
+        return redirect(url_for("document.detail", document_id=document_id))
 
     update_document_file(doc, file)
     flash("New version uploaded.", "success")
-
-    return redirect(
-        url_for("document.detail", document_id=document_id)
-    )
-
-
+    return redirect(url_for("document.detail", document_id=document_id))
 
 # =========================
 # ARCHIVE / RESTORE
@@ -461,15 +380,8 @@ def update_file(document_id):
 def archive(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if not (
-        current_user.is_manager
-        or current_user.is_admin
-        or doc.uploaded_by == current_user.id
-    ):
-        return jsonify(
-            success=False,
-            error="You are not allowed to archive this document."
-        ), 403
+    if doc.uploaded_by != current_user.id and not current_user.is_admin:
+        return jsonify(success=False, error="Permission denied"), 403
 
     soft_archive(doc)
     return jsonify(success=True)
@@ -478,16 +390,14 @@ def archive(document_id):
 @document_bp.route("/<int:document_id>/restore", methods=["POST"])
 @login_required
 def restore_view(document_id):
-    doc = Document.query.get_or_404(document_id)
-
-    if not (current_user.is_manager or current_user.is_admin):
-        flash("Only manager/admin can restore documents.", "danger")
+    if not current_user.is_admin:
+        flash("Only admin can restore documents.", "danger")
         return redirect(url_for("archive.index"))
 
+    doc = Document.query.get_or_404(document_id)
     restore(doc)
     flash("Document restored.", "success")
     return redirect(url_for("archive.index"))
-
 
 
 
@@ -499,71 +409,45 @@ def restore_view(document_id):
 def share(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not (
-        current_user.is_manager or current_user.is_admin
-    ):
+    if doc.uploaded_by != current_user.id and not current_user.is_admin:
         flash("You are not allowed to share this document.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        return redirect(url_for("document.detail", document_id=document_id))
 
     form = ShareForm()
     if not form.validate_on_submit():
         flash("Invalid share request.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        return redirect(url_for("document.detail", document_id=document_id))
 
     identifier = form.username_or_email.data.strip()
-    user = User.query.filter(
-        or_(User.username == identifier, User.email == identifier)
-    ).first()
+    user = User.query.filter(or_(User.username == identifier, User.email == identifier)).first()
 
     if not user:
         flash("User not found.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        return redirect(url_for("document.detail", document_id=document_id))
 
-    existing = DocumentShare.query.filter_by(
-        document_id=doc.id,
-        shared_with_id=user.id
-    ).first()
-
+    existing = DocumentShare.query.filter_by(document_id=doc.id, shared_with_id=user.id).first()
     if existing:
-        flash("Document already shared with this user.", "warning")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        flash("Document already shared.", "warning")
+        return redirect(url_for("document.detail", document_id=document_id))
 
-    share = DocumentShare(
-        document_id=doc.id,
-        shared_with_id=user.id,
-        can_edit=form.can_edit.data
-    )
-
+    share = DocumentShare(document_id=doc.id, shared_with_id=user.id, can_edit=form.can_edit.data)
     db.session.add(share)
     db.session.commit()
 
     log_activity(
-        "share",
+        action="share",
         document_id=doc.id,
         details=f"Shared with {user.username}"
     )
 
-    notify_user(
-        user,
-        f"A document '{doc.title}' has been shared with you."
-    )
+    notify_user(user, f"A document '{doc.title}' has been shared with you.")
 
     flash("Document shared successfully.", "success")
-    return redirect(
-        url_for("document.detail", document_id=document_id)
-    )
+    return redirect(url_for("document.detail", document_id=document_id))
 
 
 # =========================
-# STATUS UPDATE
+# STATUS UPDATE (MANUAL)
 # =========================
 @document_bp.route("/<int:document_id>/status", methods=["POST"])
 @login_required
@@ -574,11 +458,9 @@ def update_status(document_id):
     doc = Document.query.get_or_404(document_id)
     status = request.form.get("status")
 
-    if status not in ("pending", "approved", "rejected"):
+    if status not in ("uploaded", "pending", "approved", "rejected"):
         flash("Invalid status.", "danger")
-        return redirect(
-            url_for("document.detail", document_id=document_id)
-        )
+        return redirect(url_for("document.detail", document_id=document_id))
 
     doc.status = status
     db.session.commit()
@@ -595,22 +477,18 @@ def update_status(document_id):
     )
 
     flash("Status updated.", "success")
-    return redirect(
-        url_for("document.detail", document_id=document_id)
-    )
+    return redirect(url_for("document.detail", document_id=document_id))
 
 
 # =========================
-# MOVE DOCUMENT TO RECYCLE BIN
+# RECYCLE BIN & DELETE
 # =========================
 @document_bp.route("/<int:document_id>/bin", methods=["POST"])
 @login_required
 def move_document_to_bin(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not (
-        current_user.is_admin or current_user.is_manager
-    ):
+    if doc.uploaded_by != current_user.id and not current_user.is_admin:
         return jsonify(success=False, error="Permission denied"), 403
 
     doc.is_deleted = True
@@ -618,65 +496,56 @@ def move_document_to_bin(document_id):
     db.session.commit()
 
     log_activity(
-        "document_bin",
-        details=f"Moved document '{doc.title}' to recycle bin"
+        action="document_bin",
+        document_id=doc.id,
+        details=f"Moved '{doc.title}' to recycle bin"
     )
-
     return jsonify(success=True)
 
 
-# =========================
-# DELETE DOCUMENT
-# =========================
+
+
+# ==================================================
+# DELETE DOCUMENT (✅ FIXED)
+# ==================================================
 @document_bp.route("/<int:document_id>/delete", methods=["POST"])
 @login_required
 def delete_document(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not (
-        current_user.is_admin or current_user.is_manager
-    ):
+    if doc.uploaded_by != current_user.id and not current_user.is_admin:
         return jsonify(success=False, error="Permission denied"), 403
 
-    try:
-        _hard_delete_document(doc)
-        db.session.commit()
+    # 🔥 SAVE DATA BEFORE DELETE
+    doc_title = doc.title
 
-    except Exception as e:
-        db.session.rollback()
-        return jsonify(success=False, error=str(e)), 500
+    db.session.delete(doc)
+    db.session.commit()
 
+    # ✅ FK-SAFE ACTIVITY LOG
     log_activity(
-        "document_permanent_delete",
-        details=f"Permanently deleted document '{doc.title}'"
+        action="document_permanent_delete",
+        document_id=None,
+        details=f"Permanently deleted document '{doc_title}'"
     )
 
     return jsonify(success=True)
 
 
 # =========================
-# BULK MOVE TO RECYCLE BIN
+# BULK MOVE DOCUMENTS TO RECYCLE BIN
 # =========================
 @document_bp.route("/bulk/bin", methods=["POST"])
 @login_required
-def bulk_move_to_bin():
-    items = request.form.get("items")
-    if not items:
-        return jsonify(success=False), 400
-
-    data = json.loads(items)
+def bulk_documents_move_to_bin():
+    data = request.get_json(silent=True) or []
 
     for item in data:
-        if item["type"] != "document":
+        if item.get("type") != "document":
             continue
 
-        doc = Document.query.get(item["id"])
+        doc = Document.query.get(item.get("id"))
         if not doc:
-            continue
-
-        if doc.uploaded_by != current_user.id and not (
-            current_user.is_admin or current_user.is_manager
-        ):
             continue
 
         doc.is_deleted = True
@@ -686,33 +555,23 @@ def bulk_move_to_bin():
     return jsonify(success=True)
 
 
-
 # =========================
-# BULK PERMANENT DELETE
+# BULK PERMANENT DELETE DOCUMENTS
 # =========================
 @document_bp.route("/bulk/delete", methods=["POST"])
 @login_required
-def bulk_delete_documents():
-    items = request.form.get("items")
-    if not items:
-        return jsonify(success=False), 400
-
-    data = json.loads(items)
+def bulk_documents_delete():
+    data = request.get_json(silent=True) or []
 
     for item in data:
-        if item["type"] != "document":
+        if item.get("type") != "document":
             continue
 
-        doc = Document.query.get(item["id"])
+        doc = Document.query.get(item.get("id"))
         if not doc:
             continue
 
-        if doc.uploaded_by != current_user.id and not (
-            current_user.is_admin or current_user.is_manager
-        ):
-            continue
-
-        _hard_delete_document(doc)
+        db.session.delete(doc)
 
     db.session.commit()
     return jsonify(success=True)

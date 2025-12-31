@@ -47,7 +47,6 @@ class Config:
     # -------------------------------------------------
     # MUST be a valid Fernet key (32 url-safe base64 bytes)
     
-
     _raw_key = os.environ.get("SMARTDMS_ENC_KEY")
 
     if not _raw_key:
@@ -69,6 +68,17 @@ class Config:
     REMEMBER_COOKIE_DURATION = timedelta(days=7)
     REMEMBER_COOKIE_REFRESH_EACH_REQUEST = False
     SESSION_REFRESH_EACH_REQUEST = False
+
+    # --- [ADDED SECURITY FIXES] ---
+    # XSS Protection: JavaScript cannot access session cookie
+    SESSION_COOKIE_HTTPONLY = True
+    
+    # CSRF Protection: Cookies only sent in first-party context
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # HTTPS Only: Set 'USE_HTTPS=True' in .env for Production
+    # Localhost par ye False rahega taaki error na aaye
+    SESSION_COOKIE_SECURE = os.environ.get("USE_HTTPS", "False").lower() == "true"
 
 
 # -------------------------------------------------

@@ -22,12 +22,11 @@
   </div>
 
   <div class="d-flex gap-2">
-    <!-- 🔥 BULK DELETE (DOCUMENTS) -->
-    <button class="btn btn-sm btn-danger" id="bulkDeleteBtn" data-bs-toggle="modal" data-bs-target="#deleteModal"
-      data-type="document" disabled>
+    <button class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled type="button" data-bs-toggle="modal"
+      data-bs-target="#deleteModal" data-type="bulk" data-id="">
       Delete Selected
     </button>
-
+    
     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
       + Folder
     </button>
@@ -45,9 +44,7 @@
     <table class="table align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th width="40">
-            <input type="checkbox" id="selectAll">
-          </th>
+          <th width="40"><input type="checkbox" id="selectAll"></th>
           <th>Title</th>
           <th>Type</th>
           <th>Tags</th>
@@ -60,7 +57,7 @@
       <tbody>
         {% for item in items %}
 
-        <!-- ========== FOLDER ROW ========== -->
+        <!-- ================= FOLDER ROW ================= -->
         {% if item.type == "folder" %}
         {% set folder = item.obj %}
         <tr>
@@ -81,16 +78,14 @@
 
           <td class="text-center">
             <button class="btn btn-sm btn-link p-0 favorite-toggle" data-type="folder" data-id="{{ folder.id }}">
-              <i
-                class="bi {% if folder.favorited_by|length > 0 %}bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
+              <i class="bi {% if folder.favorited_by|length > 0 %}
+                bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
             </button>
           </td>
 
           <td class="text-end">
             <div class="dropdown">
-              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                &#x22EE;
-              </button>
+              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">&#x22EE;</button>
 
               <ul class="dropdown-menu dropdown-menu-end" data-bs-auto-close="outside">
                 <li>
@@ -100,30 +95,20 @@
                 </li>
 
                 <li>
-                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
-                    data-folder-action="copy">
+                  <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="copy">
                     Copy
                   </button>
                 </li>
 
                 <li>
-                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
-                    data-folder-action="move">
+                  <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="move">
                     Move
                   </button>
                 </li>
 
                 <li>
-                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
-                    data-folder-action="paste">
+                  <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="paste">
                     Paste here
-                  </button>
-                </li>
-
-                <li>
-                  <button type="button" class="dropdown-item" data-folder-id="{{ folder.id }}"
-                    data-folder-action="rename">
-                    Rename
                   </button>
                 </li>
 
@@ -131,10 +116,9 @@
                   <hr class="dropdown-divider">
                 </li>
 
-                <!-- 🔥 FOLDER DELETE -->
                 <li>
-                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
-                    data-bs-target="#deleteModal" data-type="folder" data-id="{{ folder.id }}">
+                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                    data-type="folder" data-id="{{ folder.id }}">
                     Delete
                   </button>
                 </li>
@@ -144,7 +128,7 @@
         </tr>
         {% endif %}
 
-        <!-- ========== DOCUMENT ROW ========== -->
+        <!-- ================= DOCUMENT ROW ================= -->
         {% if item.type == "document" %}
         {% set doc = item.obj %}
         <tr>
@@ -165,16 +149,14 @@
 
           <td class="text-center">
             <button class="btn btn-sm btn-link p-0 favorite-toggle" data-type="document" data-id="{{ doc.id }}">
-              <i
-                class="bi {% if doc.favorited_by|length > 0 %}bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
+              <i class="bi {% if doc.favorited_by|length > 0 %}
+                bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
             </button>
           </td>
 
           <td class="text-end">
             <div class="dropdown">
-              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                &#x22EE;
-              </button>
+              <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">&#x22EE;</button>
 
               <ul class="dropdown-menu dropdown-menu-end">
                 {% if doc.file_type in ['pdf','png','jpg','jpeg'] %}
@@ -208,8 +190,29 @@
                 </li>
 
                 <li>
-                  <button type="button" class="dropdown-item text-warning" data-doc-id="{{ doc.id }}"
-                    data-doc-action="archive">
+                  <button class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="copy">
+                    Copy
+                  </button>
+                </li>
+
+                <li>
+                  <button class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="move">
+                    Move
+                  </button>
+                </li>
+
+                <li>
+                  <button class="dropdown-item" data-doc-id="{{ doc.id }}" data-doc-action="paste">
+                    Paste here
+                  </button>
+                </li>
+
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+
+                <li>
+                  <button class="dropdown-item text-warning" data-doc-id="{{ doc.id }}" data-doc-action="archive">
                     Archive
                   </button>
                 </li>
@@ -218,10 +221,9 @@
                   <hr class="dropdown-divider">
                 </li>
 
-                <!-- 🔥 DOCUMENT DELETE -->
                 <li>
-                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
-                    data-bs-target="#deleteModal" data-type="document" data-id="{{ doc.id }}">
+                  <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                    data-type="document" data-id="{{ doc.id }}">
                     Delete
                   </button>
                 </li>

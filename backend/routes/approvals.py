@@ -1,29 +1,21 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from ..extensions import db
-from ..models import Document, User, ActivityLog
+from ..models import User, ActivityLog
 
 approvals_bp = Blueprint("approvals", __name__, url_prefix="/approvals")
 
 
 # ======================================================
-# DOCUMENT APPROVALS (EXISTING – UNCHANGED)
+# USER APPROVALS ONLY
 # ======================================================
 @approvals_bp.route("/")
 @login_required
 def index():
-    # approvals only for admin / manager
-    if not (current_user.is_admin or current_user.is_manager):
-        return render_template("approvals/index.html", documents=[], users=[])
+    if not current_user.is_admin:
+        flash("You do not have permission to view this page.", "danger")
+        return redirect(url_for("dashboard.index"))
 
-    documents = (
-        Document.query
-        .filter(Document.status.in_(["pending", "approved", "rejected"]))
-        .order_by(Document.created_at.desc())
-        .all()
-    )
-
-    # 🔹 NEW: pending users for approval
     users = (
         User.query
         .filter_by(is_approved=False)
@@ -33,15 +25,14 @@ def index():
 
     return render_template(
         "approvals/index.html",
-        documents=documents,
         users=users
     )
 
 
 # ======================================================
-# USER APPROVAL ACTION (NEW)
+# USER APPROVE
 # ======================================================
-@approvals_bp.route("/user/<int:user_id>/approve")
+@approvals_bp.route("/user/<int:user_id>/approve", methods=["POST"])
 @login_required
 def approve_user(user_id):
     if not current_user.is_admin:
@@ -56,7 +47,8 @@ def approve_user(user_id):
     db.session.add(
         ActivityLog(
             action="user_approved",
-            user_id=current_user.id
+            user_id=current_user.id,
+            ip_address=request.remote_addr
         )
     )
 
@@ -66,7 +58,10 @@ def approve_user(user_id):
     return redirect(url_for("approvals.index"))
 
 
-@approvals_bp.route("/user/<int:user_id>/reject")
+# ======================================================
+# USER REJECT
+# ======================================================
+@approvals_bp.route("/user/<int:user_id>/reject", methods=["POST"])
 @login_required
 def reject_user(user_id):
     if not current_user.is_admin:
@@ -81,7 +76,8 @@ def reject_user(user_id):
     db.session.add(
         ActivityLog(
             action="user_rejected",
-            user_id=current_user.id
+            user_id=current_user.id,
+            ip_address=request.remote_addr
         )
     )
 

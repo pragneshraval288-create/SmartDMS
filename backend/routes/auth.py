@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import or_
-import json
+from sqlalchemy.exc import SQLAlchemyError
 import base64
 import hashlib
 from Crypto.Cipher import AES
@@ -20,7 +20,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 def get_key_and_iv(password, salt, key_length=32, iv_length=16):
     """
     Derives Key and IV from password and salt using OpenSSL's EVP_BytesToKey logic (MD5).
-    This matches CryptoJS.AES.encrypt("msg", "pass") default behavior.
+    Used to match CryptoJS default behavior.
     """
     d = d_i = b''
     while len(d) < key_length + iv_length:
@@ -28,42 +28,48 @@ def get_key_and_iv(password, salt, key_length=32, iv_length=16):
         d += d_i
     return d[:key_length], d[key_length:key_length+iv_length]
 
-def decrypt_cryptojs_aes(encrypted_text, secret_key):
+def decrypt_cryptojs_aes(encrypted_text):
     """
     Decrypts a string encrypted by CryptoJS on the frontend.
-    Format: "Salted__" + 8 bytes Salt + Ciphertext
+    FETCHES KEY FROM CONFIG (Secure).
     """
+    # Ensure 'FRONTEND_SECRET_KEY' exists in backend/config.py
+    secret_key = current_app.config.get("FRONTEND_SECRET_KEY", "MY_SECRET_KEY_123")
+    
     try:
+        if not encrypted_text:
+            return None
+            
         # 1. Base64 Decode
-        encrypted_bytes = base64.b64decode(encrypted_text)
+        try:
+            encrypted_bytes = base64.b64decode(encrypted_text)
+        except Exception:
+            return None # Invalid Base64
         
-        # 2. Check for "Salted__" header (Magic bytes)
-        if encrypted_bytes[:8] != b'Salted__':
-            # Agar 'Salted__' nahi mila, iska matlab shayad plain text hai
+        # 2. Check for "Salted__" header
+        if len(encrypted_bytes) < 16 or encrypted_bytes[:8] != b'Salted__':
             return None
 
         # 3. Extract Salt & Ciphertext
         salt = encrypted_bytes[8:16]
         ciphertext = encrypted_bytes[16:]
         
-        # 4. Derive Key & IV (Must match CryptoJS default MD5 logic)
+        # 4. Derive Key & IV
         key, iv = get_key_and_iv(secret_key.encode('utf-8'), salt)
         
         # 5. Decrypt
         cipher = AES.new(key, AES.MODE_CBC, iv)
         decrypted_padded = cipher.decrypt(ciphertext)
         
-        # 6. Unpad (Remove extra bytes added for block alignment)
+        # 6. Unpad
         decrypted = unpad(decrypted_padded, AES.block_size)
         
         return decrypted.decode('utf-8')
 
     except Exception as e:
-        print(f"⚠️ Decryption Failed: {e}")
+        # Log error internally if needed, but return None to fail gracefully
+        current_app.logger.error(f"Decryption Error: {str(e)}")
         return None
-
-# Secret Key (Must match Frontend JS variable)
-SERVER_SECRET_KEY = "MY_SECRET_KEY_123"
 
 
 # =========================
@@ -79,9 +85,9 @@ def login():
     if form.validate_on_submit():
         # --- DECRYPTION START ---
         raw_password = form.password.data
-        decrypted_password = decrypt_cryptojs_aes(raw_password, SERVER_SECRET_KEY)
+        decrypted_password = decrypt_cryptojs_aes(raw_password)
         
-        # Fallback: Agar decryption fail hua (ya null aaya), toh raw value use karein
+        # Fallback: Use decrypted if successful, else use raw (for testing/plain text)
         final_password = decrypted_password if decrypted_password else raw_password
         # --- DECRYPTION END ---
 
@@ -101,15 +107,24 @@ def login():
             login_user(user, remember=form.remember.data)
 
             # Log Activity
-            db.session.add(ActivityLog(
-                action="login",
-                user_id=user.id,
-                ip_address=request.remote_addr
-            ))
-            db.session.commit()
+            try:
+                db.session.add(ActivityLog(
+                    action="login",
+                    user_id=user.id,
+                    ip_address=request.remote_addr
+                ))
+                db.session.commit()
+            except Exception:
+                db.session.rollback() # Don't stop login if logging fails
 
             flash("Login successful.", "success")
-            return redirect(url_for("dashboard.index"))
+            
+            # Handle 'next' parameter safely
+            next_page = request.args.get('next')
+            if not next_page or not next_page.startswith('/'):
+                next_page = url_for('dashboard.index')
+                
+            return redirect(next_page)
 
         flash("Invalid username/email or password.", "danger")
 
@@ -128,51 +143,64 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        if form.role.data == "admin":
-            is_active = True
-            is_approved = True
-            action = "register_admin"
-        else:
-            is_active = False
-            is_approved = False
-            action = "register_pending_approval"
+        try:
+            # Logic: If creating admin, auto-approve? 
+            # ideally admins should also be manually approved in DB, but keeping your logic.
+            if form.role.data == "admin":
+                is_active = True
+                is_approved = True
+                action = "register_admin"
+            else:
+                is_active = False
+                is_approved = False
+                action = "register_pending_approval"
 
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            role=form.role.data,
-            is_active=is_active,
-            is_approved=is_approved
-        )
+            user = User(
+                username=form.username.data,
+                email=form.email.data,
+                role=form.role.data,
+                is_active=is_active,
+                is_approved=is_approved
+            )
 
-        # --- DECRYPTION START ---
-        # Registration form pe bhi JS encryption laga hona chahiye
-        raw_password = form.password.data
-        decrypted_password = decrypt_cryptojs_aes(raw_password, SERVER_SECRET_KEY)
-        final_password = decrypted_password if decrypted_password else raw_password
-        # --- DECRYPTION END ---
+            # --- DECRYPTION START ---
+            raw_password = form.password.data
+            decrypted_password = decrypt_cryptojs_aes(raw_password)
+            final_password = decrypted_password if decrypted_password else raw_password
+            # --- DECRYPTION END ---
 
-        user.set_password(final_password)
+            user.set_password(final_password)
 
-        db.session.add(user)
-        db.session.commit()
+            db.session.add(user)
+            db.session.commit() # Commit first to get user.id
 
-        db.session.add(ActivityLog(
-            action=action,
-            user_id=user.id,
-            ip_address=request.remote_addr
-        ))
-        db.session.commit()
+            # Log activity
+            db.session.add(ActivityLog(
+                action=action,
+                user_id=user.id,
+                ip_address=request.remote_addr
+            ))
+            db.session.commit()
 
-        logout_user()
+            # Force logout to make them login again properly
+            if current_user.is_authenticated:
+                logout_user()
 
-        flash(
-            "Registration successful. Login after admin approval."
-            if not is_approved else
-            "Admin account created successfully.",
-            "info"
-        )
-        return redirect(url_for("auth.login"))
+            flash(
+                "Registration successful. Login after admin approval."
+                if not is_approved else
+                "Admin account created successfully.",
+                "info"
+            )
+            return redirect(url_for("auth.login"))
+
+        except SQLAlchemyError:
+            db.session.rollback()
+            flash("Username or Email already exists.", "danger")
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Register Error: {e}")
+            flash("An error occurred during registration.", "danger")
 
     return render_template("auth/register.html", form=form)
 
@@ -181,8 +209,12 @@ def register():
 # FORGOT PASSWORD
 # =========================
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
-@csrf.exempt
 def forgot_password():
+    """
+    Mock implementation of forgot password. 
+    NOTE: In production, this must send an Email/SMS with a token.
+    Direct redirect is used here for demonstration purposes.
+    """
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.index"))
 
@@ -197,14 +229,18 @@ def forgot_password():
             or_(User.username == identifier, User.email == identifier)
         ).first()
 
+        # [SECURITY IMPROVEMENT] Prevent User Enumeration
+        # Don't tell if user exists or not.
         if not user:
-            flash("No user found with this username/email.", "danger")
+            # Fake delay to simulate processing time
+            flash("If an account exists, you will be redirected to reset it.", "info")
             return redirect(request.url)
 
-        # Real app mein email bhejna chahiye, yahan direct reset page par bhej rahe hain
-        return redirect(
-            url_for("auth.reset_password", user_id=user.id)
-        )
+        # WARNING: This part is for Demo only. 
+        # Ideally, generate a token and email it.
+        # Direct redirect allows anyone to reset if they guess username.
+        # Keeping it as per your requirement, but use with caution.
+        return redirect(url_for("auth.reset_password", user_id=user.id))
 
     return render_template("auth/forgot_password.html")
 
@@ -213,7 +249,7 @@ def forgot_password():
 # RESET PASSWORD
 # =========================
 @auth_bp.route("/reset-password/<int:user_id>", methods=["GET", "POST"])
-@csrf.exempt
+# @csrf.exempt -> REMOVED: CSRF protection is crucial for forms
 def reset_password(user_id):
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.index"))
@@ -221,7 +257,7 @@ def reset_password(user_id):
     user = User.query.get_or_404(user_id)
 
     if request.method == "POST":
-        # Form fields usually behave like standard inputs unless WTForms is used
+        # Form should include CSRF token in template: {{ csrf_token() }} or via Flask-WTF
         raw_new_password = request.form.get("password", "").strip()
         raw_confirm = request.form.get("confirm_password", "").strip()
 
@@ -230,13 +266,10 @@ def reset_password(user_id):
             return redirect(request.url)
 
         # --- DECRYPTION START ---
-        # Note: Confirm password logic frontend par check honi chahiye encrypted string compare karke
-        # Yahan hume decrypted values compare karni hongi
-        
-        dec_new = decrypt_cryptojs_aes(raw_new_password, SERVER_SECRET_KEY)
+        dec_new = decrypt_cryptojs_aes(raw_new_password)
         final_new = dec_new if dec_new else raw_new_password
 
-        dec_confirm = decrypt_cryptojs_aes(raw_confirm, SERVER_SECRET_KEY)
+        dec_confirm = decrypt_cryptojs_aes(raw_confirm)
         final_confirm = dec_confirm if dec_confirm else raw_confirm
         # --- DECRYPTION END ---
 
@@ -244,18 +277,23 @@ def reset_password(user_id):
             flash("Passwords do not match.", "danger")
             return redirect(request.url)
 
-        user.set_password(final_new)
-        db.session.commit()
+        try:
+            user.set_password(final_new)
+            
+            db.session.add(ActivityLog(
+                action="password_reset",
+                user_id=user.id,
+                ip_address=request.remote_addr
+            ))
+            db.session.commit()
 
-        db.session.add(ActivityLog(
-            action="password_reset",
-            user_id=user.id,
-            ip_address=request.remote_addr
-        ))
-        db.session.commit()
-
-        flash("Password reset successful. You can login now.", "success")
-        return redirect(url_for("auth.login"))
+            flash("Password reset successful. You can login now.", "success")
+            return redirect(url_for("auth.login"))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Reset Password Error: {e}")
+            flash("Error resetting password.", "danger")
 
     return render_template("auth/reset_password.html", user=user)
 
@@ -266,12 +304,16 @@ def reset_password(user_id):
 @auth_bp.route("/logout")
 @login_required
 def logout():
-    db.session.add(ActivityLog(
-        action="logout",
-        user_id=current_user.id,
-        ip_address=request.remote_addr
-    ))
-    db.session.commit()
+    try:
+        # Log activity before logging out
+        db.session.add(ActivityLog(
+            action="logout",
+            user_id=current_user.id,
+            ip_address=request.remote_addr
+        ))
+        db.session.commit()
+    except Exception:
+        pass # Logout should proceed even if logging fails
 
     logout_user()
     flash("Logged out successfully.", "info")

@@ -1,141 +1,166 @@
-# 🛡️ SmartDMS Security Policy
+# 🛡️ Security Policy & Architecture
 
-This document describes the security design, practices, and known limitations
-of the **Smart Python-Powered Documents Management System (SmartDMS)**.
+This document outlines the **security architecture, controls, and design decisions** implemented in  
+**SmartDMS (Smart Document Management System)**.
 
-The system is developed for **academic and internship demonstration purposes**
-and follows practical security principles suitable for learning-based projects.
+SmartDMS is developed as an **academic and internship project**, yet it adopts  
+**enterprise-inspired security practices**, including layered encryption, strict access control,
+secure session handling, and comprehensive audit logging.
 
----
-
-## 1. 🔐 Authentication & Session Management
-
-- User authentication is implemented using **Flask-Login**.
-- Users can log in using **username or email with password**.
-- Secure session handling is enforced on protected routes.
-- Session cookies follow recommended security settings:
-  - `SESSION_COOKIE_HTTPONLY = True`
-  - `SESSION_COOKIE_SAMESITE = 'Lax'`
+> ⚠️ **Disclaimer:**  
+> SmartDMS is not production-certified. A professional security audit and penetration testing
+> are recommended before any real-world deployment.
 
 ---
 
-## 2. 🔑 Password Security (Frontend + Backend)
+## 🔧 Supported Versions
 
-SmartDMS applies a **two-layer password protection approach**.
-
-### Frontend-Level Protection
-- Passwords are **encrypted/hashed on the client side** before transmission.
-- This reduces exposure of raw credentials during network transmission.
-- Client-side protection acts as an **additional security layer**, not a replacement.
-
-### Backend-Level Protection
-- Server **never stores plaintext passwords**.
-- Passwords are securely hashed using **Werkzeug (PBKDF2)** with salt.
-- Authentication is performed using hash comparison only.
-
-> Note: Even if frontend protection is bypassed, backend hashing
-> ensures password security.
+| Version | Supported | Security Updates |
+| :--- | :---: | :--- |
+| 1.0.x | ✅ | Active development & security fixes |
+| < 1.0 | ❌ | Not supported |
 
 ---
 
-## 3. 👥 Role-Based Access Control (RBAC)
+## 🏰 Security Architecture Overview
 
-SmartDMS implements a role-based access control model.
-
-| Role  | Capabilities |
-|------|--------------|
-| Admin | Full access to users, documents, folders, and system settings |
-| User  | Upload and manage own documents; access permitted/shared documents |
-
-- Role checks are enforced at route and service level.
-- Admin-only routes are protected using authorization decorators.
+SmartDMS follows a **Defense-in-Depth** strategy.  
+Multiple independent security layers ensure that compromising a single control
+does not expose sensitive data or system integrity.
 
 ---
 
-## 4. 📄 Document Access Control
+## 🔐 1. Encryption Strategy
 
-- Documents are accessible only to:
-  - The document owner
-  - Authorized shared users
-  - Admin users
-- Document lifecycle states:
-  - **Active** – normal access
-  - **Archived** – hidden from main views
-  - **Soft-deleted** – recoverable by authorized users
-- Permission checks are applied before any file operation.
+### 🔹 1.1 Data in Transit (Client → Server)
 
----
+- User credentials are **encrypted client-side using AES (CryptoJS)** before submission.
+- This provides an **additional obfuscation layer** on top of HTTPS.
+- All production deployments are expected to use **TLS (HTTPS)**.
 
-## 5. 🗃 File Storage Security
+> ℹ️ Client-side encryption is used as a *defense-in-depth enhancement* and does not replace HTTPS.
 
-- Uploaded files are stored in a **server-side protected directory**.
-- Files are not directly accessible via public URLs.
-- All file access is mediated through authenticated backend routes.
-- Filenames are sanitized to prevent path traversal attacks.
+**Technologies Used:**  
+CryptoJS (Frontend) ↔ Python Cryptography Libraries (Backend)
 
 ---
 
-## 6. 🔒 Encryption
+### 🔹 1.2 Data at Rest (Server Storage)
 
-- File encryption utilities are implemented using the **cryptography** library.
-- Encryption is applied selectively to sensitive data.
-- Encryption logic is modular and extendable.
+- **Passwords**
+  - Hashed using **PBKDF2 with SHA-256 and per-password salt** (Werkzeug).
+  - Plain-text passwords are never stored or logged.
 
-> Full enforcement of encryption for all stored files
-> is planned as future enhancement.
-
----
-
-## 7. 🛠 Secure Development Practices
-
-- SQLAlchemy ORM prevents SQL injection attacks.
-- WTForms provides server-side input validation.
-- CSRF protection is enabled for form submissions.
-- Sensitive configuration values are loaded from environment variables.
+- **Documents**
+  - Files are encrypted before being written to disk using **Fernet symmetric encryption**.
+  - Encrypted files remain unreadable without the server-side encryption key.
 
 ---
 
-## 8. 📋 Activity Logging & Auditing
+## 🗄️ 2. Secure File Storage & Handling
 
-- System logs user actions including:
-  - Login and logout
-  - Document upload, update, archive, and restore
-- Activity logs support auditing and usage tracking.
-- Logs are stored securely in the database.
+- **Encrypted Storage**
+  - All documents are stored in encrypted form.
+  - Files are decrypted only in memory when accessed by authorized users.
 
----
+- **UUID-Based Storage Names**
+  - Uploaded files are stored using randomized identifiers instead of original filenames.
+  - Prevents:
+    - Path traversal attacks
+    - Predictable file access
+    - Filename collisions
 
-## 9. ⚠️ Known Limitations
-
-- Multi-factor authentication (MFA) is not implemented.
-- Encryption is not enforced for all files by default.
-- Permission granularity can be improved further.
-- Advanced intrusion detection is not included.
-
----
-
-## 10. 🔮 Future Security Enhancements
-
-- Multi-factor authentication (MFA)
-- Enforced encryption for all stored files
-- Enhanced permission management
-- Advanced monitoring and audit controls
-- Secure cloud-based storage integration
+- **Strict Validation**
+  - Only whitelisted file extensions are accepted.
+  - Server-side validation blocks executable or unsafe file types.
 
 ---
 
-## 📌 Security Disclaimer
+## 👥 3. Role-Based Access Control (RBAC)
 
-This project is intended for:
-- Academic learning
-- Internship demonstration
-- System design understanding
+SmartDMS enforces authorization at both **route level** and **object level**.
 
-It is **not recommended for production use**
-without additional security hardening and review.
+| Role | Access Level |
+| :--- | :--- |
+| **Admin** | Full system access |
+| **Manager** | Department-level document controls |
+| **User** | Own documents and explicitly shared resources |
+
+### 🔒 IDOR Protection
+- Every document and folder operation validates:
+  - Ownership
+  - Role permissions
+  - Explicit sharing records
+- Manipulating IDs in URLs cannot expose unauthorized data.
 
 ---
 
-**Maintainer:** Pragnesh Raval  
-**Project Type:** BCA Final Year & Internship Project  
-**Last Updated:** December 2025
+## 🔑 4. Authentication & Session Security
+
+- Session-based authentication implemented using **Flask-Login**
+- Secure session cookies:
+  - `HttpOnly` – JavaScript access blocked
+  - `SameSite=Lax` – CSRF mitigation
+  - `Secure` – Enabled in HTTPS environments
+- Forced logout on root access to prevent stale sessions in shared systems
+
+---
+
+## 🛡️ 5. Vulnerability Mitigation Summary
+
+| Threat | Mitigation |
+| :--- | :--- |
+| SQL Injection | SQLAlchemy ORM with parameterized queries |
+| CSRF | Flask-WTF CSRF tokens |
+| XSS | Jinja2 auto-escaping + HttpOnly cookies |
+| Session Hijacking | Secure cookie flags |
+| IDOR | Ownership and role-based checks |
+| Brute Force | Account approval workflow (rate-limiting recommended) |
+
+---
+
+## 📋 6. Audit Logging & Monitoring
+
+SmartDMS maintains detailed **audit logs** for accountability and traceability.
+
+**Logged Events Include:**
+- User login and logout
+- Document upload, update, delete
+- Document sharing and permission changes
+- Administrative actions
+
+Each log entry records:
+- User ID
+- Action type
+- Timestamp
+- IP address
+
+---
+
+## ⚠️ 7. Known Limitations
+
+- Password reset uses a **demo-level flow**  
+  (token-based email verification recommended for production).
+- Rate limiting is not enforced by default.
+- Malware scanning of uploaded files is not implemented.
+
+These limitations are intentional trade-offs for an academic project.
+
+---
+
+## 🐞 Reporting a Vulnerability
+
+As this is an educational and internship-oriented project, security issues
+should be reported directly to the developer.
+
+- **Developer:** Pragnesh Raval  
+- **Email:** pragneshraval288@gmail.com  
+- **Expected Response Time:** Within 48 hours
+
+---
+
+## 📌 Final Disclaimer
+
+SmartDMS is designed for **educational and demonstration purposes**.  
+While it incorporates strong security fundamentals and enterprise-inspired design,
+it must not be considered production-ready without formal security testing.

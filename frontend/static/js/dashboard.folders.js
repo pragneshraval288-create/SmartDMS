@@ -239,3 +239,52 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
+// ==================================================
+// DELETE MODAL BUTTONS (FOLDER)
+// ==================================================
+document.getElementById("moveToBinBtn")?.addEventListener("click", () => {
+  const modalEl = document.getElementById("deleteModal");
+  const folderId = modalEl.dataset.id;
+
+  fetch(`/documents/folders/${folderId}/bin`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    }
+  })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        deleteModal.hide();
+        location.reload();
+      } else {
+        showError(d.error);
+      }
+    })
+    .catch(() => showError());
+});
+
+document.getElementById("permanentDeleteBtn")?.addEventListener("click", () => {
+  const modalEl = document.getElementById("deleteModal");
+  const folderId = modalEl.dataset.id;
+
+  if (!confirm("This will permanently delete the folder. Continue?")) return;
+
+  fetch(`/documents/folders/${folderId}/delete`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    }
+  })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        deleteModal.hide();
+        location.reload();
+      } else {
+        showError(d.error);
+      }
+    })
+    .catch(() => showError());
+});

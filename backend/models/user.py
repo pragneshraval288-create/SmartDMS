@@ -38,7 +38,6 @@ class User(UserMixin, db.Model):
         index=True
     )
 
-
     # -----------------------
     # SECURITY
     # -----------------------
@@ -47,10 +46,11 @@ class User(UserMixin, db.Model):
         nullable=False
     )
 
+    # 🔥 ROLE SIMPLIFIED (admin / user ONLY)
     role = db.Column(
         db.String(20),
         nullable=False,
-        default="employee"   # admin / manager / employee
+        default="user"
     )
 
     preferred_language = db.Column(
@@ -117,14 +117,6 @@ class User(UserMixin, db.Model):
     def is_admin(self) -> bool:
         return self.role == "admin"
 
-    @property
-    def is_manager(self) -> bool:
-        return self.role == "manager"
-
-    @property
-    def is_employee(self) -> bool:
-        return self.role == "employee"
-
     # -----------------------
     # PROFILE IMAGE HELPER
     # -----------------------
@@ -141,7 +133,7 @@ class User(UserMixin, db.Model):
         )
 
     def __repr__(self):
-        return f"<User id={self.id} username={self.username}>"
+        return f"<User id={self.id} username={self.username} role={self.role}>"
 
 
 # ======================
