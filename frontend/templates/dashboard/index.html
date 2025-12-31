@@ -5,7 +5,6 @@
 
 <h1 class="h4 mb-4">Dashboard</h1>
 
-<!-- ===== TOP STATS ===== -->
 <div class="row g-3 mb-4">
   <div class="col-auto">
     <div class="card stat-card">
@@ -53,10 +52,8 @@
   </div>
 </div>
 
-<!-- ===== CHARTS ===== -->
 <div class="row g-3 mb-4">
 
-  <!-- Uploads Trend -->
   <div class="col-lg-8">
     <div class="card shadow-sm h-100">
       <div class="card-body">
@@ -77,7 +74,6 @@
     </div>
   </div>
 
-  <!-- File Type Distribution -->
   <div class="col-lg-4">
     <div class="card shadow-sm h-100">
       <div class="card-body">
@@ -100,17 +96,13 @@
 
 </div>
 
-<!-- ===== SYSTEM RESOURCES + RECENT FOLDERS ===== -->
 <div class="row g-3 mb-4">
-  <!-- System Resources -->
   <div class="col-lg-6">
     <div class="card shadow-sm h-100">
       <div class="card-body">
         <h2 class="h6 mb-3">System Resources</h2>
 
         <div class="row text-center">
-
-          <!-- CPU -->
           <div class="col-4">
             <canvas id="cpuChart" width="95" height="95" data-value="8">
             </canvas>
@@ -120,7 +112,6 @@
             </div>
           </div>
 
-          <!-- Memory -->
           <div class="col-4">
             <canvas id="memoryChart" width="95" height="95" data-value="38">
             </canvas>
@@ -130,7 +121,6 @@
             </div>
           </div>
 
-          <!-- Disk -->
           <div class="col-4">
             <canvas id="diskChart" width="95" height="95" data-value="5">
             </canvas>
@@ -139,95 +129,94 @@
               <span id="diskValue">5</span>%
             </div>
           </div>
-
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ===== RECENT FOLDERS (FIXED) ===== -->
   <div class="col-lg-6">
     <div class="card shadow-sm h-100">
       <div class="card-body d-flex flex-column">
-  
+
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h2 class="h6 mb-0">Recent Folders</h2>
           <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
             <i class="bi bi-folder-plus me-1"></i> Create
           </button>
         </div>
-  
+
         <div class="flex-grow-1 overflow-auto" style="max-height: 260px;">
           <ul class="list-group list-group-flush small">
-  
+
             {% for folder in recent_folders %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-  
+
               <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-folder-fill text-primary"></i>
                 <a href="{{ url_for('document.list_documents', folder=folder.id) }}">
                   {{ folder.name }}
                 </a>
               </div>
-  
+
               <div class="d-flex align-items-center gap-2">
                 <span class="text-muted small">
                   {{ folder.created_at.strftime('%Y-%m-%d') }}
                 </span>
-  
+
                 <div class="dropdown">
                   <button class="btn btn-sm btn-light border-0" data-bs-toggle="dropdown">
                     <i class="bi bi-three-dots-vertical"></i>
                   </button>
-  
-                  <ul class="dropdown-menu dropdown-menu-end shadow-sm" data-folder-menu="{{ folder.id }}">
+
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
                       <a class="dropdown-item" href="{{ url_for('document.list_documents', folder=folder.id) }}">
                         <i class="bi bi-folder2-open me-2"></i> Open
                       </a>
                     </li>
-  
+
                     <li>
-                      <a class="dropdown-item" href="#" data-folder-id="{{ folder.id }}" data-folder-action="copy">
+                      <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="copy">
                         <i class="bi bi-files me-2"></i> Copy
-                      </a>
-                    </li>
-  
-                    <li>
-                      <a class="dropdown-item" href="#" data-folder-id="{{ folder.id }}" data-folder-action="move">
-                        <i class="bi bi-arrows-move me-2"></i> Move
-                      </a>
+                      </button>
                     </li>
 
                     <li>
-                      <a class="dropdown-item text-primary" href="#" data-folder-id="{{ folder.id }}" data-folder-action="paste">
+                      <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="move">
+                        <i class="bi bi-arrows-move me-2"></i> Move
+                      </button>
+                    </li>
+
+                    <li>
+                      <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="paste">
                         <i class="bi bi-clipboard-check me-2"></i> Paste here
-                      </a>
+                      </button>
                     </li>
-                    
+
                     <li>
                       <hr class="dropdown-divider">
                     </li>
-  
+
                     <li>
-                      <a class="dropdown-item" href="#" data-folder-id="{{ folder.id }}" data-folder-action="rename">
+                      <button class="dropdown-item" data-folder-id="{{ folder.id }}" data-folder-action="rename">
                         <i class="bi bi-pencil me-2"></i> Rename
-                      </a>
+                      </button>
                     </li>
-  
+
                     <li>
                       <hr class="dropdown-divider">
                     </li>
-  
+
                     <li>
-                      <a class="dropdown-item text-danger" href="#" data-folder-id="{{ folder.id }}"
-                        data-folder-action="delete">
+                      <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
+                        data-bs-target="#deleteModal" data-type="folder" data-id="{{ folder.id }}"
+                        data-name="{{ folder.name }}">
                         <i class="bi bi-trash me-2"></i> Delete
-                      </a>
+                      </button>
                     </li>
                   </ul>
                 </div>
-  
+
               </div>
             </li>
             {% else %}
@@ -235,23 +224,21 @@
               No folders created yet.
             </li>
             {% endfor %}
-  
+
           </ul>
         </div>
-  
+
       </div>
     </div>
   </div>
 </div>
 
 
-<!-- ===== ACTIVITY LOG ===== -->
 <div class="row mb-4">
   <div class="col-12">
     <div class="card shadow-sm">
       <div class="card-body">
         <h2 class="h6 mb-3">Activity Log</h2>
-
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0">
             <thead class="table-light">
@@ -273,30 +260,24 @@
                   {% endif %}
                 </td>
                 <td>
-                  <span class="badge bg-primary">
-                    {{ log.action }}
-                  </span>
+                  <span class="badge bg-primary">{{ log.action }}</span>
                 </td>
                 <td>-</td>
                 <td>{{ log.user_id if log.user_id else '-' }}</td>
               </tr>
               {% else %}
               <tr>
-                <td colspan="4" class="text-center text-muted py-3">
-                  No activity yet.
-                </td>
+                <td colspan="4" class="text-center text-muted py-3">No activity yet.</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<!-- ===== CREATE FOLDER MODAL ===== -->
 <div class="modal fade" id="createFolderModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -304,17 +285,123 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="modal-header">
           <h5 class="modal-title">Create Folder</h5>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <input type="text" name="name" class="form-control" placeholder="Folder name" required>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary w-100">Create</button>
+          <button type="submit" class="btn btn-primary w-100">Create</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-3">Select how you want to delete <strong id="deleteItemName">this item</strong>.</p>
+
+        <input type="hidden" id="modalItemId" value="">
+        <input type="hidden" id="modalItemType" value="folder">
+        <input type="hidden" id="csrfToken" value="{{ csrf_token() }}">
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-warning text-dark" id="btnSoftDelete">
+            Move to Recycle Bin
+          </button>
+
+          <button type="button" class="btn btn-danger" id="btnHardDelete">
+            Permanently Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // --- 1. Delete Modal Logic ---
+    const deleteModal = document.getElementById('deleteModal');
+    const nameSpan = document.getElementById('deleteItemName');
+    const inputItemId = document.getElementById('modalItemId');
+    const csrfToken = document.getElementById('csrfToken').value;
+
+    if (deleteModal) {
+      deleteModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+
+        nameSpan.textContent = name ? `"${name}"` : 'this folder';
+        inputItemId.value = id;
+      });
+    }
+
+    function performDelete(deleteMode) {
+      const id = inputItemId.value;
+      const url = deleteMode === 'soft' ? `/documents/folders/${id}/bin` : `/documents/folders/${id}/delete`;
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Error deleting folder: " + (data.error || "Unknown error"));
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("An error occurred.");
+        });
+    }
+
+    const btnSoft = document.getElementById('btnSoftDelete');
+    if (btnSoft) btnSoft.addEventListener('click', () => performDelete('soft'));
+
+    const btnHard = document.getElementById('btnHardDelete');
+    if (btnHard) btnHard.addEventListener('click', () => {
+      if (confirm("Permanently delete this folder and all its contents?")) {
+        performDelete('hard');
+      }
+    });
+
+    // --- 2. Rename Logic (Optional Helper) ---
+    // Agar Rename ke liye alag Modal nahi hai, toh simple Prompt use kar sakte hain
+    document.querySelectorAll('[data-folder-action="rename"]').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const id = this.dataset.folderId;
+        const newName = prompt("Enter new folder name:");
+        if (newName) {
+          fetch(`/documents/folders/${id}/rename`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ name: newName })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) location.reload();
+              else alert(data.error);
+            });
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}

@@ -1,4 +1,5 @@
 # backend/routes/documents.py
+
 from io import BytesIO
 from werkzeug.datastructures import FileStorage
 from datetime import datetime
@@ -35,11 +36,11 @@ document_bp = Blueprint("document", __name__, url_prefix="/documents")
 def _user_can_view(doc: Document) -> bool:
     if current_user.is_admin:
         return True
-    if doc.uploaded_by == current_user.id:
+    if doc.uploaded_by == int(current_user.id):
         return True
     return DocumentShare.query.filter_by(
         document_id=doc.id,
-        shared_with_id=current_user.id
+        shared_with_id=int(current_user.id)
     ).first() is not None
 
 
@@ -49,7 +50,7 @@ def _user_owns_folder(folder_id):
     folder = Folder.query.get(folder_id)
     if not folder:
         return False
-    return current_user.is_admin or folder.created_by == current_user.id
+    return current_user.is_admin or folder.created_by == int(current_user.id)
 
 
 # ==================================================
@@ -60,17 +61,19 @@ def _user_owns_folder(folder_id):
 def list_documents():
     form = DocumentFilterForm(request.args)
     folder_id = request.args.get("folder", type=int)
+    current_user_id = int(current_user.id)
 
     active_folder = None
     if folder_id:
         active_folder = Folder.query.get_or_404(folder_id)
-        if not current_user.is_admin and active_folder.created_by != current_user.id:
+        if not current_user.is_admin and active_folder.created_by != current_user_id:
             flash("Permission denied.", "danger")
             return redirect(url_for("document.list_documents"))
 
+    # 1. Query Folders
     folder_query = Folder.query.filter(Folder.deleted_at.is_(None))
     if not current_user.is_admin:
-        folder_query = folder_query.filter(Folder.created_by == current_user.id)
+        folder_query = folder_query.filter(Folder.created_by == current_user_id)
 
     if active_folder:
         folder_query = folder_query.filter(Folder.parent_id == active_folder.id)
@@ -79,15 +82,16 @@ def list_documents():
 
     folders = folder_query.order_by(Folder.created_at.asc()).all()
 
+    # 2. Query Documents
     doc_query = Document.query.filter(Document.is_deleted.is_(False))
 
     if not current_user.is_admin:
         doc_query = doc_query.filter(
             or_(
-                Document.uploaded_by == current_user.id,
+                Document.uploaded_by == current_user_id,
                 Document.id.in_(
                     db.session.query(DocumentShare.document_id)
-                    .filter(DocumentShare.shared_with_id == current_user.id)
+                    .filter(DocumentShare.shared_with_id == current_user_id)
                 )
             )
         )
@@ -104,7 +108,10 @@ def list_documents():
         )
 
     status = form.status.data or "active"
-    doc_query = doc_query.filter(Document.is_active.is_(status != "archived"))
+    if status == "archived":
+        doc_query = doc_query.filter(Document.is_active.is_(False))
+    else:
+        doc_query = doc_query.filter(Document.is_active.is_(True))
 
     documents = doc_query.order_by(Document.created_at.desc()).all()
 
@@ -120,15 +127,47 @@ def list_documents():
         form=form
     )
 
-# ==================================================
+
+# =========================
+# CREATE FOLDER
+# =========================
+@document_bp.route("/create_folder", methods=["POST"])
+@login_required
+def create_folder():
+    name = request.form.get("name", "").strip()
+    parent_id = request.form.get("parent_id", type=int)
+
+    if not name:
+        flash("Folder name is required.", "danger")
+        return redirect(url_for("document.list_documents", folder=parent_id))
+
+    if parent_id and not _user_owns_folder(parent_id):
+        flash("Permission denied.", "danger")
+        return redirect(url_for("document.list_documents"))
+
+    new_folder = Folder(
+        name=name,
+        parent_id=parent_id,
+        created_by=int(current_user.id)
+    )
+    db.session.add(new_folder)
+    db.session.commit()
+
+    log_activity("folder_create", details=f"Created folder '{name}'")
+    flash("Folder created successfully.", "success")
+    
+    return redirect(url_for("document.list_documents", folder=parent_id))
+
+
+# =========================
 # MY DOCUMENTS
-# ==================================================
+# =========================
 @document_bp.route("/my")
 @login_required
 def my_documents():
     documents = (
         Document.query
-        .filter_by(uploaded_by=current_user.id)
+        .filter_by(uploaded_by=int(current_user.id))
         .order_by(Document.created_at.desc())
         .all()
     )
@@ -194,7 +233,6 @@ def move_document(doc_id):
     if doc.folder_id == target_folder_id:
         return jsonify(success=False, error="Document already in this folder"), 400
 
-    # [SECURITY FIX] Verify target folder ownership
     if target_folder_id and not _user_owns_folder(target_folder_id):
         return jsonify(success=False, error="Cannot move to a folder you do not own"), 403
 
@@ -206,7 +244,6 @@ def move_document(doc_id):
         document_id=doc.id,
         details=f"Moved document '{doc.title}'"
     )
-
 
     return jsonify(success=True)
 
@@ -225,7 +262,6 @@ def copy_document(doc_id):
     if not _user_can_view(doc):
         return jsonify(success=False, error="Permission denied"), 403
 
-    # [SECURITY FIX] Verify target folder ownership
     if target_folder_id and not _user_owns_folder(target_folder_id):
         return jsonify(success=False, error="Cannot copy to a folder you do not own"), 403
 
@@ -250,7 +286,7 @@ def copy_document(doc_id):
             stored_name=stored_name,
             filepath=stored_path,
             file_type=doc.file_type,
-            uploaded_by=current_user.id,
+            uploaded_by=int(current_user.id),
             folder_id=target_folder_id,
             version=1,
             is_active=True
@@ -264,7 +300,6 @@ def copy_document(doc_id):
             document_id=new_doc.id,
             details=f"Copied document '{doc.title}'"
         )
-
 
         return jsonify(success=True)
 
@@ -289,7 +324,7 @@ def detail(document_id):
     if comment_form.validate_on_submit():
         comment = DocumentComment(
             document_id=doc.id,
-            user_id=current_user.id,
+            user_id=int(current_user.id),
             content=comment_form.content.data.strip()
         )
         db.session.add(comment)
@@ -359,7 +394,7 @@ def preview(document_id):
 def update_file(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not current_user.is_admin:
+    if doc.uploaded_by != int(current_user.id) and not current_user.is_admin:
         flash("You are not allowed to update this document.", "danger")
         return redirect(url_for("document.detail", document_id=document_id))
 
@@ -380,7 +415,7 @@ def update_file(document_id):
 def archive(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not current_user.is_admin:
+    if doc.uploaded_by != int(current_user.id) and not current_user.is_admin:
         return jsonify(success=False, error="Permission denied"), 403
 
     soft_archive(doc)
@@ -409,7 +444,7 @@ def restore_view(document_id):
 def share(document_id):
     doc = Document.query.get_or_404(document_id)
 
-    if doc.uploaded_by != current_user.id and not current_user.is_admin:
+    if doc.uploaded_by != int(current_user.id) and not current_user.is_admin:
         flash("You are not allowed to share this document.", "danger")
         return redirect(url_for("document.detail", document_id=document_id))
 
@@ -481,48 +516,113 @@ def update_status(document_id):
 
 
 # =========================
-# RECYCLE BIN & DELETE
+# GENERIC DELETE ITEM (Updated for Shares & Bulk)
+# =========================
+@document_bp.route("/delete_item", methods=["POST"])
+@login_required
+def delete_item():
+    """
+    Unified endpoint to Soft Delete either a Folder or a Document.
+    Handles shared item removal ("Unshare") correctly.
+    """
+    item_type = request.form.get("item_type")
+    item_id = request.form.get("item_id", type=int)
+    current_user_id = int(current_user.id)
+
+    if item_type == "folder":
+        folder = Folder.query.get_or_404(item_id)
+        if not current_user.is_admin and folder.created_by != current_user_id:
+            flash("Permission denied.", "danger")
+            return redirect(url_for("document.list_documents"))
+        
+        folder.deleted_at = datetime.utcnow()
+        db.session.commit()
+        log_activity("folder_delete", details=f"Soft deleted folder '{folder.name}'")
+        flash("Folder deleted.", "success")
+        return redirect(url_for("document.list_documents", folder=folder.parent_id))
+
+    elif item_type == "document":
+        doc = Document.query.get_or_404(item_id)
+        
+        # 1. If Owner -> Soft Delete
+        if doc.uploaded_by == current_user_id or current_user.is_admin:
+            doc.is_deleted = True
+            doc.deleted_at = datetime.utcnow()
+            db.session.commit()
+            log_activity("document_bin", document_id=doc.id, details=f"Moved '{doc.title}' to recycle bin")
+            flash("Document moved to recycle bin.", "success")
+        
+        # 2. If Shared Recipient -> Unshare (Permanently remove from view)
+        else:
+            share = DocumentShare.query.filter_by(
+                document_id=doc.id,
+                shared_with_id=current_user_id
+            ).first()
+            if share:
+                db.session.delete(share)
+                db.session.commit()
+                log_activity("share_remove", document_id=doc.id, details=f"Removed shared document '{doc.title}'")
+                flash("Shared document removed.", "success")
+            else:
+                flash("Permission denied.", "danger")
+
+        return redirect(url_for("document.list_documents", folder=doc.folder_id))
+
+    else:
+        flash("Invalid item type.", "danger")
+        return redirect(url_for("document.list_documents"))
+
+
+# =========================
+# SPECIFIC MOVE TO BIN (API) - Updated for Shares
 # =========================
 @document_bp.route("/<int:document_id>/bin", methods=["POST"])
 @login_required
 def move_document_to_bin(document_id):
     doc = Document.query.get_or_404(document_id)
+    current_user_id = int(current_user.id)
 
-    if doc.uploaded_by != current_user.id and not current_user.is_admin:
-        return jsonify(success=False, error="Permission denied"), 403
+    # 1. If Owner -> Soft Delete
+    if doc.uploaded_by == current_user_id or current_user.is_admin:
+        doc.is_deleted = True
+        doc.deleted_at = datetime.utcnow()
+        db.session.commit()
+        log_activity("document_bin", document_id=doc.id, details=f"Moved '{doc.title}' to recycle bin")
+        return jsonify(success=True)
 
-    doc.is_deleted = True
-    doc.deleted_at = datetime.utcnow()
-    db.session.commit()
-
-    log_activity(
-        action="document_bin",
+    # 2. If Shared Recipient -> Unshare (Success)
+    # Deleting the share link means it disappears from the recipient's list
+    share = DocumentShare.query.filter_by(
         document_id=doc.id,
-        details=f"Moved '{doc.title}' to recycle bin"
-    )
-    return jsonify(success=True)
+        shared_with_id=current_user_id
+    ).first()
+
+    if share:
+        db.session.delete(share)
+        db.session.commit()
+        log_activity("share_remove", document_id=doc.id, details=f"Removed shared document '{doc.title}'")
+        return jsonify(success=True)
+
+    return jsonify(success=False, error="Permission denied. You do not own this document."), 403
 
 
-
-
-# ==================================================
-# DELETE DOCUMENT (✅ FIXED)
-# ==================================================
+# =========================
+# PERMANENT DELETE DOCUMENT
+# =========================
 @document_bp.route("/<int:document_id>/delete", methods=["POST"])
 @login_required
 def delete_document(document_id):
     doc = Document.query.get_or_404(document_id)
+    current_user_id = int(current_user.id)
 
-    if doc.uploaded_by != current_user.id and not current_user.is_admin:
-        return jsonify(success=False, error="Permission denied"), 403
+    # Only owner/admin can permanently delete the FILE
+    if doc.uploaded_by != current_user_id and not current_user.is_admin:
+        return jsonify(success=False, error="Permission denied. Only the owner can permanently delete this."), 403
 
-    # 🔥 SAVE DATA BEFORE DELETE
     doc_title = doc.title
-
     db.session.delete(doc)
     db.session.commit()
 
-    # ✅ FK-SAFE ACTIVITY LOG
     log_activity(
         action="document_permanent_delete",
         document_id=None,
@@ -533,23 +633,33 @@ def delete_document(document_id):
 
 
 # =========================
-# BULK MOVE DOCUMENTS TO RECYCLE BIN
+# BULK MOVE DOCUMENTS TO RECYCLE BIN (Updated for Shares)
 # =========================
 @document_bp.route("/bulk/bin", methods=["POST"])
 @login_required
 def bulk_documents_move_to_bin():
-    data = request.get_json(silent=True) or []
+    data = request.get_json(silent=True) or {}
+    ids = data.get("ids", [])
+    current_user_id = int(current_user.id)
 
-    for item in data:
-        if item.get("type") != "document":
-            continue
+    if not isinstance(ids, list):
+        return jsonify(success=False, error="Invalid payload"), 400
 
-        doc = Document.query.get(item.get("id"))
-        if not doc:
-            continue
+    documents = Document.query.filter(Document.id.in_(ids)).all()
 
-        doc.is_deleted = True
-        doc.deleted_at = datetime.utcnow()
+    for doc in documents:
+        # Case 1: Owner -> Soft Delete
+        if doc.uploaded_by == current_user_id or current_user.is_admin:
+            doc.is_deleted = True
+            doc.deleted_at = datetime.utcnow()
+            log_activity("document_bin", document_id=doc.id, details=f"Moved '{doc.title}' to recycle bin")
+        
+        # Case 2: Shared Recipient -> Unshare
+        else:
+            share = DocumentShare.query.filter_by(document_id=doc.id, shared_with_id=current_user_id).first()
+            if share:
+                db.session.delete(share)
+                log_activity("share_remove", document_id=doc.id, details=f"Removed shared document '{doc.title}'")
 
     db.session.commit()
     return jsonify(success=True)
@@ -561,17 +671,23 @@ def bulk_documents_move_to_bin():
 @document_bp.route("/bulk/delete", methods=["POST"])
 @login_required
 def bulk_documents_delete():
-    data = request.get_json(silent=True) or []
+    data = request.get_json(silent=True) or {}
+    ids = data.get("ids", [])
+    current_user_id = int(current_user.id)
 
-    for item in data:
-        if item.get("type") != "document":
+    if not isinstance(ids, list):
+        return jsonify(success=False, error="Invalid payload"), 400
+
+    documents = Document.query.filter(Document.id.in_(ids)).all()
+
+    for doc in documents:
+        # Only Owner can hard delete
+        if doc.uploaded_by != current_user_id and not current_user.is_admin:
             continue
 
-        doc = Document.query.get(item.get("id"))
-        if not doc:
-            continue
-
+        doc_title = doc.title
         db.session.delete(doc)
+        log_activity("document_permanent_delete", document_id=None, details=f"Permanently deleted document '{doc_title}'")
 
     db.session.commit()
     return jsonify(success=True)
