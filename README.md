@@ -309,35 +309,23 @@ http://127.0.0.1:5000
 
 ## 🖼️ Screenshots
 
-<div align="center">
-
 ### 🔐 Login Page
-![SmartDMS Login Page](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/login.png)
-
-*Secure authentication interface with HTTPS + AES encryption*
+![Login](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/login.png)
 
 ---
 
 ### 📊 Dashboard
-![SmartDMS Dashboard](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/dashboard.png)
-
-*Main user dashboard with analytics, file type distribution, and system resources*
+![Dashboard](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/dashboard.png)
 
 ---
 
 ### 📋 All Documents
-![Document Management View](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/documents.png)
-
-*Comprehensive document management view with folders, files, and actions*
+![Documents](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/documents.png)
 
 ---
 
-### 📤 Upload Documents
-![Document Upload Page](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/upload.png)
-
-*Simple and secure document upload interface with support for multiple file types*
-
-</div>
+### 📤 Upload
+![Upload](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/upload.png)
 
 ---
 
