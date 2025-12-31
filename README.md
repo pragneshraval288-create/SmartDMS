@@ -313,7 +313,7 @@ http://127.0.0.1:5000
 
 ### 🔐 Login Page
 
-![SmartDMS Login Page](frontend/static/screenshots/login.png)
+![Login Page](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/login.png)
 
 *Secure authentication interface with HTTPS + AES encryption*
 
