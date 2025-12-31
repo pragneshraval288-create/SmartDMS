@@ -309,6 +309,7 @@ http://127.0.0.1:5000
 
 ## 🖼️ Screenshots
 
+<div align="center">
 
 ### 🔐 Login Page
 ![SmartDMS Login Page](https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/login.png)
@@ -336,6 +337,7 @@ http://127.0.0.1:5000
 
 *Simple and secure document upload interface with support for multiple file types*
 
+</div>
 
 ---
 
