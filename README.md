@@ -321,7 +321,7 @@ http://127.0.0.1:5000
 
 ### 📊 Dashboard
 
-<img src="frontend/static/screenshots/dashboard.png" alt="SmartDMS Dashboard" width="800"/>
+<img src="./frontend/static/screenshots/dashboard.png" alt="SmartDMS Dashboard" width="800"/>
 
 *Main user dashboard with analytics, file type distribution, and system resources*
 
