@@ -113,7 +113,7 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 
 <div align="center">
 
-<img src="frontend/static/screenshots/architecture.png" alt="System Architecture Diagram" width="600"/>
+![System Architecture](frontend/static/screenshots/architecture.png)
 
 *High-level system architecture showing the flow of data and security layers*
 
@@ -313,7 +313,7 @@ http://127.0.0.1:5000
 
 ### 🔐 Login Page
 
-<img src="frontend/static/screenshots/login.png" alt="SmartDMS Login Page" width="800"/>
+![SmartDMS Login Page](frontend/static/screenshots/login.png)
 
 *Secure authentication interface with HTTPS + AES encryption*
 
@@ -321,7 +321,7 @@ http://127.0.0.1:5000
 
 ### 📊 Dashboard
 
-<img src="frontend/static/screenshots/dashboard.png" alt="SmartDMS Dashboard" width="800"/>
+![SmartDMS Dashboard](frontend/static/screenshots/dashboard.png)
 
 *Main user dashboard with analytics, file type distribution, and system resources*
 
@@ -329,7 +329,7 @@ http://127.0.0.1:5000
 
 ### 📋 All Documents
 
-<img src="frontend/static/screenshots/documents.png" alt="Document Management View" width="800"/>
+![Document Management View](frontend/static/screenshots/documents.png)
 
 *Comprehensive document management view with folders, files, and actions*
 
@@ -337,7 +337,7 @@ http://127.0.0.1:5000
 
 ### 📤 Upload Documents
 
-<img src="frontend/static/screenshots/upload.png" alt="Document Upload Page" width="800"/>
+![Document Upload Page](frontend/static/screenshots/upload.png)
 
 *Simple and secure document upload interface with support for multiple file types*
 
