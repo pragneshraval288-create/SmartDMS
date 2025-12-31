@@ -113,7 +113,7 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 
 <div align="center">
 
-![System Architecture](frontend/static/screenshots/architecture.png)
+<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/architecture.png" alt="System Architecture" width="700">
 
 *High-level system architecture showing the flow of data and security layers*
 
@@ -237,7 +237,7 @@ Before you begin, ensure you have the following installed:
 #### 1️⃣ Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/pragneshraval288-create/SmartDMS.git
 cd SmartDMS
 ```
 
@@ -288,7 +288,7 @@ SMARTDMS_ENC_KEY=your_encryption_key_here
 mysql -u root -p -e "CREATE DATABASE your_db_name;"
 
 # Run migrations (if applicable)
-flask db upgrade    #if migrations are enabled
+flask db upgrade
 ```
 
 #### 6️⃣ Run the Application
@@ -313,31 +313,37 @@ http://127.0.0.1:5000
 
 ### 🔐 Login Page
 
-![SmartDMS Login Page](frontend/static/screenshots/login.png)
+<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/login.png" alt="SmartDMS Login Page" width="800">
 
 *Secure authentication interface with HTTPS + AES encryption*
+
+<br><br>
 
 ---
 
 ### 📊 Dashboard
 
-![SmartDMS Dashboard](frontend/static/screenshots/dashboard.png)
+<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/dashboard.png" alt="SmartDMS Dashboard" width="800">
 
 *Main user dashboard with analytics, file type distribution, and system resources*
+
+<br><br>
 
 ---
 
 ### 📋 All Documents
 
-![Document Management View](frontend/static/screenshots/documents.png)
+<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/documents.png" alt="Document Management View" width="800">
 
 *Comprehensive document management view with folders, files, and actions*
+
+<br><br>
 
 ---
 
 ### 📤 Upload Documents
 
-![Document Upload Page](frontend/static/screenshots/upload.png)
+<img src="https://raw.githubusercontent.com/pragneshraval288-create/SmartDMS/main/frontend/static/screenshots/upload.png" alt="Document Upload Page" width="800">
 
 *Simple and secure document upload interface with support for multiple file types*
 
