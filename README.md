@@ -113,7 +113,7 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 
 <div align="center">
 
-![System Architecture](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/architecture.png?raw=true)
+![System Architecture](frontend/static/screenshots/architecture.png)
 
 *High-level system architecture showing the flow of data and security layers*
 
@@ -237,7 +237,7 @@ Before you begin, ensure you have the following installed:
 #### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/pragneshraval288-create/SmartDMS.git
+git clone <repository-url>
 cd SmartDMS
 ```
 
@@ -288,7 +288,7 @@ SMARTDMS_ENC_KEY=your_encryption_key_here
 mysql -u root -p -e "CREATE DATABASE your_db_name;"
 
 # Run migrations (if applicable)
-flask db upgrade
+flask db upgrade    #if migrations are enabled
 ```
 
 #### 6️⃣ Run the Application
@@ -313,37 +313,31 @@ http://127.0.0.1:5000
 
 ### 🔐 Login Page
 
-![SmartDMS Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/login.png?raw=true)
+![SmartDMS Login Page](frontend/static/screenshots/login.png)
 
 *Secure authentication interface with HTTPS + AES encryption*
-
-<br><br>
 
 ---
 
 ### 📊 Dashboard
 
-![SmartDMS Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/dashboard.png?raw=true)
+![SmartDMS Dashboard](frontend/static/screenshots/dashboard.png)
 
 *Main user dashboard with analytics, file type distribution, and system resources*
-
-<br><br>
 
 ---
 
 ### 📋 All Documents
 
-![Document Management View](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/documents.png?raw=true)
+![Document Management View](frontend/static/screenshots/documents.png)
 
 *Comprehensive document management view with folders, files, and actions*
-
-<br><br>
 
 ---
 
 ### 📤 Upload Documents
 
-![Document Upload Page](https://github.com/pragneshraval288-create/SmartDMS/blob/master/frontend/static/screenshots/upload.png?raw=true)
+![Document Upload Page](frontend/static/screenshots/upload.png)
 
 *Simple and secure document upload interface with support for multiple file types*
 
