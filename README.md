@@ -312,14 +312,14 @@ http://127.0.0.1:5000
 <div align="center">
 
 ### 🔐 Login Page
-![SmartDMS Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/login.png)
+![SmartDMS Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Login.png)
 
 *Secure authentication interface with HTTPS + AES encryption*
 
 ---
 
 ### 📊 Dashboard
-![SmartDMS Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/dashboard.png)
+![SmartDMS Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Dashboard.png)
 
 *Main user dashboard with analytics, file type distribution, and system resources*
 
@@ -333,7 +333,7 @@ http://127.0.0.1:5000
 ---
 
 ### 📤 Upload Documents
-![Document Upload Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/upload.png)
+![Document Upload Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Upload.png)
 
 *Simple and secure document upload interface with support for multiple file types*
 
