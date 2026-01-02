@@ -1,4 +1,4 @@
-# 📄 Smart Python-Powered Documents Management System (SmartDMS)
+# 📄 Smart Python-Powered Document Management System (SmartDMS)
 
 <div align="center">
 
@@ -8,14 +8,16 @@
 ![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=pytest)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
-**A secure, role-based document management system built with Python & Flask for academic and internship purposes.**
+**A secure, role-based document management system built with Python & Flask**
+
+**Developed as BCA Final Year Project & BISAG-N Internship Project**
 
 [Features](#-key-features) •
 [Installation](#-installation--setup) •
 [Testing](#-testing) •
 [Screenshots](#-screenshots) •
 [Security](#-security-overview) •
-[Author](#-author)
+[Team](#-development-team)
 
 </div>
 
@@ -25,48 +27,131 @@
 
 - [About](#-about)
 - [Academic & Internship Details](#-academic--internship-details)
+- [Development Team](#-development-team)
 - [Key Features](#-key-features)
 - [User Roles](#-user-roles)
 - [System Architecture](#-system-architecture)
-- [Project Folder Structure](#-project-folder-structure)
 - [Technology Stack](#-technology-stack)
 - [Installation & Setup](#-installation--setup)
 - [Testing](#-testing)
 - [Screenshots](#-screenshots)
 - [Security Overview](#-security-overview)
 - [API Documentation](#-api-documentation)
+- [Project Structure](#-project-structure)
 - [Troubleshooting](#-troubleshooting)
+- [Future Enhancements](#-future-enhancements)
 - [Disclaimer](#-disclaimer)
-- [Author](#-author)
-- [Acknowledgement](#-acknowledgement)
+- [Acknowledgements](#-acknowledgements)
 
 ---
 
 ## 📖 About
 
-SmartDMS is a **secure, role-based document management system** developed using **Python and Flask**, designed to manage documents efficiently with a strong focus on **security, access control, and auditability**.
+**SmartDMS** is a secure, enterprise-inspired document management system developed as both a **BCA Final Year Project** and **BISAG-N Internship Project**. The system demonstrates professional software development practices with a strong focus on **security, scalability, and user experience**.
 
-This project is developed as both a **BCA Final Year Project** and an **Internship Project**, incorporating enterprise-inspired security practices including:
+### Core Philosophy
+
+SmartDMS follows industry-standard security practices including:
 
 - 🔐 **End-to-end encryption** for sensitive data
-- 🛡️ **Frontend password encryption** using CryptoJS (AES-256)
-- 🔒 **Backend decryption** with OpenSSL-compatible key derivation
+- 🛡️ **Frontend password encryption** using CryptoJS (AES-256-CBC)
+- 🔓 **Backend decryption** with OpenSSL-compatible key derivation
 - 📁 **File encryption at rest** using Fernet encryption
-- 🔑 **PBKDF2-SHA256** password hashing
+- 🔑 **PBKDF2-SHA256** password hashing (600,000 iterations)
 - 🚦 **Role-based access control** (RBAC)
-- 📊 **Comprehensive audit logging**
+- 📊 **Comprehensive audit logging** with IP tracking
+- ⭐ **UUID-based file naming** to prevent attacks
 
 ---
 
 ## 🎓 Academic & Internship Details
 
-| Detail | Information |
-|--------|-------------|
-| **Project Type** | BCA Final Year Project + Internship Project |
-| **College** | College of Computer Management Studies, Vadu |
-| **Internship Organization** | **BISAG-N** (Bhaskaracharya National Institute for Space Applications and Geo-informatics) |
-| **Academic Year** | 2024-2025 |
-| **Project Duration** | 6 Months |
+<table>
+<tr>
+<td width="50%">
+
+### 📚 Academic Context
+
+- **Project Type**: BCA Final Year Project
+- **Institution**: College of Computer Management Studies, Vadu
+- **Academic Year**: 2024-2025
+- **Duration**: 6 Months
+
+</td>
+<td width="50%">
+
+### 🏢 Internship Context
+
+- **Organization**: BISAG-N
+- **Full Name**: Bhaskaracharya National Institute for Space Applications and Geo-informatics
+- **Duration**: 6 Months (Final Month)
+- **Location**: Gujarat, India
+
+</td>
+</tr>
+</table>
+
+---
+
+## 👥 Development Team
+
+<div align="center">
+
+### Team of 3 Developers
+
+</div>
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+<img src="https://github.com/identicons/pragnesh.png" width="100" style="border-radius:50%"/>
+
+**Pragnesh Raval**
+
+*Lead Developer*
+
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pragneshraval288-create)
+
+**Responsibilities:**
+- Project Architecture
+- Backend Development
+- Security Implementation
+- Database Design
+
+</td>
+<td align="center" width="33%">
+
+<img src="https://github.com/identicons/parth.png" width="100" style="border-radius:50%"/>
+
+**Parth Gadhavi**
+
+*Backend Developer*
+
+**Responsibilities:**
+- API Development
+- Business Logic
+- Service Layer
+- Testing
+
+</td>
+<td align="center" width="33%">
+
+<img src="https://github.com/identicons/yash.png" width="100" style="border-radius:50%"/>
+
+**Yash Raval**
+
+*Frontend Developer*
+
+**Responsibilities:**
+- UI/UX Design
+- Frontend Development
+- JavaScript Modules
+- Responsive Design
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -76,30 +161,53 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 <tr>
 <td width="50%">
 
-### 🔐 Security
-- Secure user authentication using Flask-Login
-- **Frontend password encryption** (CryptoJS AES-256)
-- **Backend decryption** with OpenSSL MD5 key derivation
-- CSRF protection and secure session handling
-- **Encrypted document storage** (Fernet encryption)
-- **Field-level database encryption** (title, tags, category)
-- **UUID-based filenames** to prevent file overwrite attacks
-- Password hashing using PBKDF2-SHA256
-- HTTP-only & SameSite cookies for XSS/CSRF protection
+### 🔐 Security Features
+
+- ✅ **Triple-Layer Encryption**
+  - Frontend password encryption (CryptoJS AES-256)
+  - Backend secure decryption (OpenSSL compatible)
+  - Database field-level encryption (Fernet)
+- ✅ **File Encryption at Rest**
+  - All documents encrypted on disk
+  - UUID-based filenames
+  - Secure file storage
+- ✅ **Advanced Authentication**
+  - PBKDF2-SHA256 password hashing
+  - Flask-Login session management
+  - User approval workflow
+- ✅ **CSRF Protection**
+  - Flask-WTF CSRF tokens
+  - Secure cookies (HttpOnly, SameSite)
+- ✅ **Comprehensive Audit Logging**
+  - All actions logged with IP addresses
+  - Activity timeline
+  - Security event tracking
 
 </td>
 <td width="50%">
 
 ### 📁 Document Management
-- Secure file upload, download, and preview
-- Document versioning with history tracking
-- Document sharing with access control & expiry
-- Folder hierarchy with move/copy operations
-- Recycle bin with restore and permanent delete
-- Bulk operations (move, delete, restore)
-- Advanced search and filtering
-- Document comments and annotations
-- Favorites system for quick access
+
+- ✅ **Complete CRUD Operations**
+  - Upload with drag-and-drop
+  - Download with encryption/decryption
+  - Preview (PDF, images)
+  - Inline editing
+- ✅ **Advanced Features**
+  - Document versioning with history
+  - Folder hierarchy (unlimited depth)
+  - Document sharing with expiry
+  - Comments and annotations
+  - Favorites system
+  - Tags and categories
+- ✅ **Bulk Operations**
+  - Multi-select with checkboxes
+  - Bulk delete (soft/hard)
+  - Bulk move/copy
+- ✅ **Recycle Bin**
+  - Soft delete mechanism
+  - Restore functionality
+  - Permanent delete option
 
 </td>
 </tr>
@@ -107,24 +215,38 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 <td width="50%">
 
 ### 👥 Access Control
-- Role-based access control (Admin & User)
-- Granular permission system
-- Document ownership and sharing
-- User approval workflow
-- Strict authorization checks
-- Activity-based access logging
+
+- ✅ **Two-Tier Role System**
+  - **Admin**: Full system access
+  - **User**: Own documents + shared
+- ✅ **Granular Permissions**
+  - Document-level ownership
+  - Folder-level permissions
+  - Share with edit/view rights
+- ✅ **Authorization Checks**
+  - Route-level protection
+  - Object-level validation
+  - IDOR prevention
 
 </td>
 <td width="50%">
 
-### 📊 Audit & Tracking
-- Comprehensive activity logging
-- Complete audit trail with IP tracking
-- Document lifecycle tracking
-- User action monitoring
-- Download tracking
-- Real-time notifications
-- Security event logging
+### 📊 Analytics & Monitoring
+
+- ✅ **Dashboard Analytics**
+  - Upload trend charts (10 days)
+  - File type distribution
+  - System resource monitoring
+  - Recent activity timeline
+- ✅ **Real-time Notifications**
+  - Bell dropdown with count
+  - Mark as read/unread
+  - Individual delete
+  - Clear all functionality
+- ✅ **Activity Tracking**
+  - Complete audit trail
+  - IP address logging
+  - Timestamp tracking
 
 </td>
 </tr>
@@ -132,25 +254,39 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 <td width="50%">
 
 ### 🎨 User Experience
-- Modern, responsive UI
-- Dashboard with analytics & charts
-- File type distribution visualization
-- Recent activity timeline
-- Notification center
-- Profile management
-- Theme customization options
+
+- ✅ **Modern UI Design**
+  - Responsive layout (mobile/tablet/desktop)
+  - Smooth animations (fade, slide, scale)
+  - Gradient backgrounds
+  - Card hover effects
+- ✅ **Interactive Elements**
+  - Collapsible sidebar (72px → 220px)
+  - Modal-based forms
+  - Toast notifications
+  - Progress indicators
+- ✅ **Chart Visualizations**
+  - Line charts (Chart.js)
+  - Doughnut charts
+  - Horizontal bar charts
 
 </td>
 <td width="50%">
 
 ### 🛠️ Developer Features
-- Service-based architecture
-- Clean code organization
-- Type hints for better IDE support
-- Comprehensive error handling
-- Logging infrastructure
-- Test suite (pytest)
-- Environment-based configuration
+
+- ✅ **Clean Architecture**
+  - Service-based design
+  - Blueprint organization
+  - Type hints support
+- ✅ **Testing Infrastructure**
+  - pytest test suite
+  - In-memory SQLite tests
+  - Integration tests
+- ✅ **Configuration Management**
+  - Environment variables (.env)
+  - Multi-database support
+  - Debug/production modes
 
 </td>
 </tr>
@@ -160,261 +296,215 @@ This project is developed as both a **BCA Final Year Project** and an **Internsh
 
 ## 👥 User Roles
 
-| Role | Permissions |
-|:----:|-------------|
-| **🔑 Admin** | Full system access, user management, document oversight, system configuration, audit logs, user approval/rejection |
-| **👤 User** | Access to own documents, view/manage shared documents, personal settings, folder management, document versioning |
+<div align="center">
+
+| Role | Icon | Permissions | Restrictions |
+|:----:|:----:|-------------|--------------|
+| **Admin** | 🔑 | • Full system access<br>• User management<br>• Document oversight<br>• System configuration<br>• Audit log access<br>• User approval/rejection | • Actions are logged<br>• Subject to audit trail |
+| **User** | 👤 | • Own documents access<br>• Shared documents (read/write)<br>• Personal settings<br>• Folder management<br>• Document versioning | • Cannot access others' documents<br>• Cannot modify system settings<br>• Cannot manage users |
+
+</div>
 
 ---
 
 ## 🏗️ System Architecture
 
-<div align="center">
-
-![System Architecture](frontend/static/screenshots/architecture.png)
-
-*High-level system architecture showing the flow of data and security layers*
-
-</div>
-
-The above diagram represents the high-level architecture of SmartDMS. It demonstrates:
-- How user requests flow from the frontend to the backend
-- How authentication and authorization are enforced at multiple layers
-- How documents and metadata are encrypted and stored securely
-- The separation of concerns between presentation, business logic, and data layers
-
-### Architecture Layers
+### High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│               Presentation Layer                     │
-│  (HTML Templates, CSS, JavaScript, CryptoJS)        │
-└─────────────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────────┐
-│              Application Layer                       │
-│  (Flask Routes, Form Validation, CSRF Protection)   │
-└─────────────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────────┐
-│               Business Logic Layer                   │
-│  (Services: Document, Encryption, Notification)     │
-└─────────────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────────┐
-│                  Data Layer                          │
-│  (SQLAlchemy Models, Database Operations)           │
-└─────────────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────────┐
-│                Storage Layer                         │
-│  (MySQL Database, Encrypted File Storage)           │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 📁 Project Folder Structure
-
-```text
-SmartDMS/
-│
-├── 📂 backend/
-│   ├── 📄 app.py                 # Main application entry
-│   ├── 📄 config.py              # Configuration settings
-│   ├── 📄 forms.py               # WTForms definitions
-│   │
-│   ├── 📂 extensions/            # Flask extensions
-│   │   └── 📄 __init__.py        # DB, Login Manager, CSRF, Migrate
-│   │
-│   ├── 📂 models/                # Database models
-│   │   ├── 📄 user.py            # User & LoginLog models
-│   │   ├── 📄 document.py        # Document & DocumentVersion
-│   │   ├── 📄 folder.py          # Folder model (hierarchical)
-│   │   ├── 📄 comment.py         # Document comments
-│   │   ├── 📄 share.py           # Document sharing
-│   │   ├── 📄 activity.py        # Activity logging
-│   │   ├── 📄 notification.py    # User notifications
-│   │   └── 📄 favorite.py        # Favorites system
-│   │
-│   ├── 📂 routes/                # API routes (Blueprints)
-│   │   ├── 📄 auth.py            # Authentication routes
-│   │   ├── 📄 document.py        # Document CRUD operations
-│   │   ├── 📄 folder.py          # Folder operations
-│   │   ├── 📄 dashboard.py       # Dashboard & analytics
-│   │   ├── 📄 profile.py         # User profile management
-│   │   ├── 📄 recycle_bin.py     # Soft-deleted items
-│   │   ├── 📄 favorites.py       # Favorite documents/folders
-│   │   ├── 📄 sharing.py         # Shared documents view
-│   │   ├── 📄 notifications.py   # Notification center
-│   │   ├── 📄 users.py           # User management (admin)
-│   │   ├── 📄 approvals.py       # User approval workflow
-│   │   ├── 📄 security.py        # Security logs
-│   │   ├── 📄 settings.py        # System settings
-│   │   ├── 📄 storage.py         # Storage info
-│   │   ├── 📄 reports.py         # Reports & analytics
-│   │   ├── 📄 roles.py           # Role management
-│   │   ├── 📄 archive.py         # Archived documents
-│   │   └── 📄 api.py             # REST API endpoints
-│   │
-│   └── 📂 services/              # Business logic services
-│       ├── 📄 document_service.py    # Document operations
-│       ├── 📄 encryption_service.py  # Encryption/Decryption
-│       ├── 📄 storage_service.py     # File storage operations
-│       ├── 📄 activity_service.py    # Activity logging
-│       └── 📄 notification_service.py # Notifications
-│
-├── 📂 frontend/
-│   ├── 📂 static/
-│   │   ├── 📂 css/               # Stylesheets
-│   │   ├── 📂 js/                # JavaScript files
-│   │   ├── 📂 images/            # Static images
-│   │   ├── 📂 uploads/           # User profile uploads
-│   │   └── 📂 screenshots/       # App screenshots
-│   │
-│   └── 📂 templates/             # HTML templates (Jinja2)
-│       ├── 📂 auth/              # Authentication pages
-│       ├── 📂 documents/         # Document management
-│       ├── 📂 dashboard/         # Dashboard views
-│       ├── 📂 profile/           # Profile pages
-│       ├── 📂 notifications/     # Notification center
-│       └── 📄 base.html          # Base template
-│
-├── 📂 storage/
-│   └── 📂 files/                 # Encrypted document storage
-│
-├── 📂 instance/                  # Instance-specific files
-│   └── 📄 smartdms_enterprise.db # SQLite DB (if not using MySQL)
-│
-├── 📂 tests/                     # Test suite
-│   ├── 📄 __init__.py
-│   ├── 📄 conftest.py            # Pytest fixtures
-│   ├── 📄 test_auth.py           # Authentication tests
-│   ├── 📄 test_documents.py      # Document tests
-│   └── 📄 test_folders.py        # Folder tests
-│
-├── 📄 .env                       # Environment variables (DO NOT COMMIT)
-├── 📄 .env.example               # Example environment file
-├── 📄 .gitignore                 # Git ignore rules
-├── 📄 run.py                     # Application runner
-├── 📄 requirements.txt           # Python dependencies
-├── 📄 README.md                  # Project documentation
-└── 📄 SECURITY.md                # Security documentation
+┌─────────────────────────────────────────────────────────────────┐
+│                    PRESENTATION LAYER                            │
+│  (HTML Templates, CSS Animations, JavaScript Modules)           │
+│                                                                  │
+│  • Responsive UI (Bootstrap 5)                                   │
+│  • Real-time Notifications                                       │
+│  • Chart.js Visualizations                                       │
+│  • CryptoJS Password Encryption                                  │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   APPLICATION LAYER                              │
+│       (Flask Routes, Form Validation, CSRF Protection)           │
+│                                                                  │
+│  • 18 Blueprint Routes                                           │
+│  • WTForms Validation                                            │
+│  • Flask-Login Authentication                                    │
+│  • OpenSSL-Compatible Decryption                                 │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                  BUSINESS LOGIC LAYER                            │
+│    (Services: Document, Encryption, Notification, Storage)      │
+│                                                                  │
+│  • Document Service (CRUD + Versioning)                          │
+│  • Encryption Service (Fernet + AES)                             │
+│  • Storage Service (File Management)                             │
+│  • Activity Service (Audit Logging)                              │
+│  • Notification Service (Real-time Alerts)                       │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                       DATA LAYER                                 │
+│          (SQLAlchemy ORM, Database Operations)                   │
+│                                                                  │
+│  • 11 Database Models                                            │
+│  • Relationships (1:N, N:M, Self-Referential)                    │
+│  • Cascade Rules (CASCADE, SET NULL)                             │
+│  • Indexes for Performance                                       │
+└──────────────────────────┬───────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                      STORAGE LAYER                               │
+│         (MySQL Database, Encrypted File Storage)                 │
+│                                                                  │
+│  • MySQL 8.0+ (Production)                                       │
+│  • SQLite (Development/Testing)                                  │
+│  • Encrypted Files (storage/files/)                              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🛠️ Technology Stack
 
+### Backend Technologies
+
 <table>
 <tr>
 <td align="center" width="25%">
 
-### 🐍 Backend
+**Core Framework**
 
-![Python](https://img.shields.io/badge/-Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/-Flask-000000?style=flat-square&logo=flask&logoColor=white)
 
-- Python 3.10+
-- Flask 3.x
-- Flask-Login
-- Flask-WTF (CSRF)
-- SQLAlchemy ORM
-- Flask-Migrate (Alembic)
-- PyMySQL
+- Flask 3.0.3
+- Werkzeug 3.0.1
 - python-dotenv
 
 </td>
 <td align="center" width="25%">
 
-### 🎨 Frontend
-
-![HTML5](https://img.shields.io/badge/-HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/-CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
-
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- CryptoJS (AES Encryption)
-- Jinja2 Templates
-
-</td>
-<td align="center" width="25%">
-
-### 🗄️ Database
+**Database & ORM**
 
 ![MySQL](https://img.shields.io/badge/-MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
 
-- MySQL 8.0+
-- SQLAlchemy ORM
-- Database migrations
-- Foreign key constraints
-- Indexing for performance
+- Flask-SQLAlchemy
+- PyMySQL
+- Flask-Migrate
 
 </td>
 <td align="center" width="25%">
 
-### 🔒 Security
+**Security**
 
 ![Security](https://img.shields.io/badge/-Security-red?style=flat-square&logo=security&logoColor=white)
 
-- PBKDF2 (SHA-256)
-- Fernet Encryption
-- CryptoJS (AES-256)
-- RBAC
-- CSRF Protection
-- Secure Cookies
-- Activity Logging
+- cryptography
+- pycryptodome
+- pyOpenSSL
+- Flask-WTF (CSRF)
+
+</td>
+<td align="center" width="25%">
+
+**Authentication**
+
+![Auth](https://img.shields.io/badge/-Auth-blue?style=flat-square)
+
+- Flask-Login
+- email-validator
+- PBKDF2-SHA256
 
 </td>
 </tr>
+</table>
+
+### Frontend Technologies
+
+<table>
 <tr>
 <td align="center" width="25%">
 
-### 🧪 Testing
+**UI Framework**
+
+![Bootstrap](https://img.shields.io/badge/-Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white)
+
+- Bootstrap 5.3.2
+- Bootstrap Icons
+- Responsive Grid
+
+</td>
+<td align="center" width="25%">
+
+**Styling**
+
+![CSS3](https://img.shields.io/badge/-CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+
+- Custom CSS (800+ lines)
+- Keyframe Animations
+- CSS Variables
+- Gradients
+
+</td>
+<td align="center" width="25%">
+
+**JavaScript**
+
+![JavaScript](https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+
+- ES6+ Modules
+- CryptoJS (AES)
+- Chart.js 4.4.1
+- Fetch API
+
+</td>
+<td align="center" width="25%">
+
+**Templating**
+
+![Jinja2](https://img.shields.io/badge/-Jinja2-B41717?style=flat-square)
+
+- Jinja2 Templates
+- Template Inheritance
+- Custom Filters
+
+</td>
+</tr>
+</table>
+
+### Testing & Development
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+**Testing**
 
 ![Pytest](https://img.shields.io/badge/-Pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)
 
-- pytest
-- pytest-flask
-- Test fixtures
-- Integration tests
-- Unit tests
+- pytest 8.0.0
+- pytest-flask 1.3.0
+- In-memory SQLite
+- Test Fixtures
 
 </td>
-<td align="center" width="25%">
+<td align="center" width="33%">
 
-### 📦 Encryption
+**Development Tools**
 
-![Cryptography](https://img.shields.io/badge/-Cryptography-blue?style=flat-square)
-
-- cryptography (Fernet)
-- pycryptodome (AES)
-- Secure key derivation
-- File encryption
+- Git Version Control
+- Virtual Environments
+- Environment Variables
+- Type Hints
 
 </td>
-<td align="center" width="25%">
+<td align="center" width="33%">
 
-### 🛡️ Security Tools
+**Timezone**
 
-- Werkzeug Security
-- secure_filename
-- HTTP-only cookies
-- SameSite policy
-- Input validation
-
-</td>
-<td align="center" width="25%">
-
-### 🎯 Development
-
-- Git version control
-- Virtual environments
-- Environment variables
-- Code organization
-- Type hints
+- tzdata 2024.1
+- ZoneInfo (Python 3.9+)
+- IST Support
 
 </td>
 </tr>
@@ -426,7 +516,7 @@ SmartDMS/
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed:
+Ensure you have the following installed:
 
 | Requirement | Version | Download Link |
 |-------------|---------|---------------|
@@ -435,7 +525,7 @@ Before you begin, ensure you have the following installed:
 | pip | Latest version | Included with Python |
 | Git | Latest version | [git-scm.com](https://git-scm.com/downloads) |
 
-### Step-by-Step Installation
+### Installation Steps
 
 #### 1️⃣ Clone the Repository
 
@@ -446,15 +536,15 @@ cd SmartDMS
 
 #### 2️⃣ Create Virtual Environment
 
+**Windows:**
 ```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# Windows:
 venv\Scripts\activate
+```
 
-# macOS/Linux:
+**Linux/macOS:**
+```bash
+python3 -m venv venv
 source venv/bin/activate
 ```
 
@@ -467,54 +557,39 @@ pip install -r requirements.txt
 
 #### 4️⃣ Configure Environment Variables
 
-Create a `.env` file in the root directory by copying `.env.example`:
-
-```bash
-# Copy example file
-cp .env.example .env
-
-# Edit .env file with your settings
-```
-
-**Required Environment Variables:**
+Create a `.env` file in the root directory:
 
 ```env
 # Application Settings
-SECRET_KEY=your_very_secure_secret_key_here_change_this
+SECRET_KEY=your_secret_key_here_change_this
 
 # Encryption Keys
 SMARTDMS_ENC_KEY=your_fernet_key_here
-FRONTEND_SECRET_KEY=your_frontend_aes_key_here
+FRONTEND_SECRET_KEY=MY_SECRET_KEY_123
 
 # Database Configuration
-DB_TYPE=mysql
-DB_USER=your_db_user
-DB_PASS=your_db_password
+DB_USER=smartdms_user
+DB_PASS=smartdms_pass
 DB_NAME=smartdms_enterprise
-DB_HOST=localhost
+DB_HOST=127.0.0.1
 
 # Security Settings
-USE_HTTPS=False  # Set to True in production with SSL
+USE_HTTPS=False  # Set to True in production
 ```
 
 **Generate Encryption Keys:**
 
 ```bash
-# Generate Fernet key for SMARTDMS_ENC_KEY
+# Fernet Key
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 
-# Generate random key for FRONTEND_SECRET_KEY
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-
-# Generate SECRET_KEY
+# Secret Key
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-> ⚠️ **Important:** Never commit your `.env` file to version control! The `.gitignore` file should already exclude it.
+#### 5️⃣ Database Setup
 
-#### 5️⃣ Initialize Database
-
-**Option A: Using MySQL (Recommended for Production)**
+**MySQL (Production):**
 
 ```bash
 # Login to MySQL
@@ -523,194 +598,76 @@ mysql -u root -p
 # Create database
 CREATE DATABASE smartdms_enterprise CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-# Create user (optional)
-CREATE USER 'smartdms_user'@'localhost' IDENTIFIED BY 'your_password';
+# Create user
+CREATE USER 'smartdms_user'@'localhost' IDENTIFIED BY 'smartdms_pass';
 GRANT ALL PRIVILEGES ON smartdms_enterprise.* TO 'smartdms_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
-**Option B: Using SQLite (Development Only)**
+**SQLite (Development):**
 
-Update `.env`:
-```env
-DB_TYPE=sqlite
-```
+No setup needed - database file will be created automatically.
 
-#### 6️⃣ Run Database Migrations (Optional)
-
-If you want to use Flask-Migrate:
+#### 6️⃣ Run the Application
 
 ```bash
-# Uncomment in app.py first:
-# migrate.init_app(app, db)
-
-# Initialize migrations
-flask db init
-
-# Create initial migration
-flask db migrate -m "Initial migration"
-
-# Apply migrations
-flask db upgrade
-```
-
-Or let Flask auto-create tables:
-
-```bash
-# Tables will be created automatically on first run
 python run.py
 ```
+
+Access at: **http://127.0.0.1:5000**
 
 #### 7️⃣ Create Admin User
 
-After the database is initialized, you need to create an admin account:
-
-**Method 1: Via Registration**
-1. Run the application: `python run.py`
-2. Navigate to: `http://127.0.0.1:5000/auth/register`
-3. Register with role "Admin"
-4. Admin accounts are auto-approved
-
-**Method 2: Via Database (MySQL)**
-
-```sql
--- Insert admin user (password: Admin@123)
-INSERT INTO users (username, full_name, email, password_hash, role, is_active, is_approved, created_at)
-VALUES (
-    'admin',
-    'System Administrator',
-    'admin@smartdms.com',
-    'pbkdf2:sha256:600000$...',  -- Use generate_password_hash('Admin@123')
-    'admin',
-    1,
-    1,
-    NOW()
-);
-```
-
-**Generate password hash in Python:**
-
-```python
-from werkzeug.security import generate_password_hash
-print(generate_password_hash('Admin@123'))
-```
-
-#### 8️⃣ Run the Application
-
-```bash
-# Development mode
-python run.py
-
-# Or using Flask CLI
-flask run
-
-# Production mode (with Gunicorn)
-gunicorn -w 4 -b 0.0.0.0:5000 'backend.app:create_app()'
-```
-
-#### 9️⃣ Access the Application
-
-Open your browser and navigate to:
-
-```
-http://127.0.0.1:5000
-```
-
-**Default Admin Credentials** (if manually created):
-- Username: `admin`
-- Password: `Admin@123`
-
-> 🔒 **Security Note:** Change the default admin password immediately after first login!
+**Via Registration:**
+1. Navigate to: `http://127.0.0.1:5000/auth/register`
+2. Register with role "Admin"
+3. Admin accounts are auto-approved
 
 ---
 
 ## 🧪 Testing
 
-SmartDMS includes a comprehensive test suite using **pytest** to ensure code quality and reliability.
+SmartDMS includes a comprehensive test suite using **pytest**.
 
 ### Test Coverage
 
-| Test Category | Status | Files Tested |
-|---------------|--------|--------------|
-| **Authentication** | ✅ Passing | Login, Registration, Password Reset |
-| **Document Management** | ✅ Passing | CRUD operations, Access control |
-| **Folder Operations** | ✅ Passing | Create, Delete, Move, Copy |
-| **API Endpoints** | ✅ Passing | REST API responses |
+| Test Category | Files | Status |
+|---------------|-------|--------|
+| Authentication | test_auth.py | ✅ Passing |
+| Document Management | test_documents.py | ✅ Passing |
+| Folder Operations | test_folders.py (5 tests) | ✅ Passing |
 
 ### Running Tests
 
-#### Run All Tests
-
 ```bash
-# Make sure you're in the project root directory
-# and virtual environment is activated
-
 # Run all tests
 pytest
 
 # Run with verbose output
 pytest -v
 
-# Run with coverage report
-pytest --cov=backend --cov-report=html
-```
-
-#### Run Specific Test Files
-
-```bash
-# Run only authentication tests
+# Run specific test file
 pytest tests/test_auth.py
 
-# Run only document tests
-pytest tests/test_documents.py
-
-# Run only folder tests
-pytest tests/test_folders.py
-```
-
-#### Run Specific Test Functions
-
-```bash
-# Run a specific test function
-pytest tests/test_auth.py::test_login_page_loads
-
-# Run tests matching a pattern
-pytest -k "folder"
+# Run with coverage
+pytest --cov=backend --cov-report=html
 ```
 
 ### Test Structure
 
 ```
 tests/
-├── __init__.py
-├── conftest.py              # Test fixtures and configuration
-├── test_auth.py             # Authentication & authorization tests
-├── test_documents.py        # Document management tests
-└── test_folders.py          # Folder operations tests
+├── conftest.py              # Test fixtures (in-memory SQLite)
+├── test_auth.py             # Login, Registration, Password Reset
+├── test_documents.py        # CRUD operations, Access control
+└── test_folders.py          # Create, Delete, Move, Copy
 ```
 
-### Test Configuration (`conftest.py`)
-
-The test suite uses **in-memory SQLite** database for fast, isolated testing:
-
-```python
-@pytest.fixture
-def app():
-    app = create_app()
-    app.config.update({
-        "TESTING": True,
-        "WTF_CSRF_ENABLED": False,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:"
-    })
-    # ...
-```
-
-### Sample Test Results
+### Sample Test Output
 
 ```
 ======================== test session starts =========================
-platform win32 -- Python 3.10.0, pytest-7.4.0
 collected 8 items
 
 tests/test_auth.py ..                                          [ 25%]
@@ -720,46 +677,6 @@ tests/test_folders.py .....                                    [100%]
 ========================= 8 passed in 2.45s ==========================
 ```
 
-### Writing New Tests
-
-To add new tests, create a new file in the `tests/` directory:
-
-```python
-# tests/test_new_feature.py
-import pytest
-
-def test_new_feature(client, app):
-    """Test description"""
-    response = client.get('/new-endpoint')
-    assert response.status_code == 200
-```
-
-### Continuous Integration
-
-Tests can be integrated with CI/CD pipelines:
-
-```yaml
-# .github/workflows/tests.yml (Example for GitHub Actions)
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Run tests
-        run: pytest
-```
-
 ---
 
 ## 🖼️ Screenshots
@@ -767,30 +684,30 @@ jobs:
 <div align="center">
 
 ### 🔐 Login Page
-![SmartDMS Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Login.png)
+![Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Login.png)
 
-*Secure authentication interface with HTTPS + AES-256 encryption*
+*Secure authentication with frontend AES-256 encryption*
 
 ---
 
 ### 📊 Dashboard
-![SmartDMS Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Dashboard.png)
+![Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Dashboard.png)
 
-*Main user dashboard with analytics, file type distribution, upload trends, and system resources*
-
----
-
-### 📋 All Documents
-![Document Management View](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/documents.png)
-
-*Comprehensive document management view with folder hierarchy, files, and bulk actions*
+*Analytics dashboard with charts and system monitoring*
 
 ---
 
-### 📤 Upload Documents
-![Document Upload Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Upload.png)
+### 📋 Document Management
+![Documents](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/documents.png)
 
-*Simple and secure document upload interface with drag-and-drop support and encryption*
+*Comprehensive document and folder management*
+
+---
+
+### 📤 Upload Interface
+![Upload](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Upload.png)
+
+*Secure document upload with encryption*
 
 </div>
 
@@ -798,88 +715,99 @@ jobs:
 
 ## 🔐 Security Overview
 
-SmartDMS follows a **Defense-in-Depth** approach with multiple security layers:
+### Multi-Layer Security Architecture
 
-### Security Implementation
-
-| Layer | Implementation | Details |
-|-------|----------------|---------|
-| **🔐 Authentication** | Flask-Login + Session Management | Secure session handling, remember me functionality |
-| **🔑 Authorization** | Role-Based Access Control (RBAC) | Admin vs User permissions, granular access |
-| **🛡️ Password Security** | PBKDF2-SHA256 Hashing | 600,000 iterations, 16-byte salt |
-| **🔒 Frontend Encryption** | CryptoJS AES-256-CBC | Passwords encrypted before transmission |
-| **🔓 Backend Decryption** | OpenSSL MD5 Key Derivation | Compatible with CryptoJS encryption |
-| **📁 File Encryption** | Fernet (AES-128-CBC) | Files encrypted at rest on disk |
-| **💾 Database Encryption** | Field-Level Encryption | Title, tags, category encrypted |
-| **🆔 Filename Randomization** | UUID v4 | Prevents predictable filename attacks |
-| **🚫 CSRF Protection** | Flask-WTF CSRF Tokens | All forms protected |
-| **🍪 Session Security** | HTTP-only, SameSite Cookies | XSS and CSRF mitigation |
-| **📊 Activity Logging** | Comprehensive Audit Trail | All actions logged with IP addresses |
-| **✅ Input Validation** | WTForms Validators | Server-side validation on all inputs |
-| **🔍 SQL Injection Prevention** | SQLAlchemy ORM | Parameterized queries |
-| **📝 Content Security** | secure_filename() | Path traversal prevention |
+<table>
+<tr>
+<th width="25%">Security Layer</th>
+<th width="50%">Implementation</th>
+<th width="25%">Technology</th>
+</tr>
+<tr>
+<td><strong>Frontend Encryption</strong></td>
+<td>Passwords encrypted client-side before transmission</td>
+<td>CryptoJS AES-256-CBC</td>
+</tr>
+<tr>
+<td><strong>Backend Decryption</strong></td>
+<td>OpenSSL-compatible MD5 key derivation</td>
+<td>Python Cryptography</td>
+</tr>
+<tr>
+<td><strong>Password Storage</strong></td>
+<td>PBKDF2 with SHA-256, 600k iterations</td>
+<td>Werkzeug Security</td>
+</tr>
+<tr>
+<td><strong>File Encryption</strong></td>
+<td>Symmetric encryption (AES-128-CBC)</td>
+<td>Fernet</td>
+</tr>
+<tr>
+<td><strong>Database Encryption</strong></td>
+<td>Field-level encryption (title, tags, category)</td>
+<td>Fernet</td>
+</tr>
+<tr>
+<td><strong>Session Security</strong></td>
+<td>HTTP-only, SameSite, Secure cookies</td>
+<td>Flask-Login</td>
+</tr>
+<tr>
+<td><strong>CSRF Protection</strong></td>
+<td>Token-based validation on all forms</td>
+<td>Flask-WTF</td>
+</tr>
+<tr>
+<td><strong>Audit Logging</strong></td>
+<td>All actions logged with IP & timestamp</td>
+<td>Custom Implementation</td>
+</tr>
+</table>
 
 ### Encryption Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      FRONTEND (Browser)                          │
-│                                                                  │
-│  1. User enters password: "MySecretPass@123"                    │
-│  2. CryptoJS encrypts with AES-256-CBC                          │
-│  3. Encrypted payload sent to backend                           │
-│     Example: "U2FsdGVkX1+abc123..."                             │
-└─────────────────────────────────────────────────────────────────┘
-                            ↓ HTTPS
-┌─────────────────────────────────────────────────────────────────┐
-│                      BACKEND (Flask)                             │
-│                                                                  │
-│  4. Receives encrypted payload                                   │
-│  5. Uses OpenSSL-compatible MD5 key derivation                  │
-│  6. Decrypts to plaintext: "MySecretPass@123"                   │
-│  7. Hashes with PBKDF2-SHA256 for storage                       │
-│     Example: "pbkdf2:sha256:600000$..."                         │
-│  8. Stores hashed password in database                          │
-└─────────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                      DATABASE (MySQL)                            │
-│                                                                  │
-│  • Passwords: PBKDF2-SHA256 hashed                              │
-│  • Sensitive fields: Fernet encrypted                           │
-│  • Files: AES-128-CBC encrypted on disk                         │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Browser)                        │
+│                                                              │
+│  1. User enters password: "MyPassword@123"                  │
+│  2. CryptoJS encrypts with AES-256-CBC                      │
+│  3. Encrypted sent: "U2FsdGVkX1+abc..."                     │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓ HTTPS
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND (Flask)                           │
+│                                                              │
+│  4. Receives encrypted payload                               │
+│  5. MD5 key derivation (OpenSSL compatible)                 │
+│  6. Decrypts to: "MyPassword@123"                           │
+│  7. PBKDF2-SHA256 hashing (600k iterations)                 │
+│  8. Stores: "pbkdf2:sha256:600000$..."                      │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   DATABASE (MySQL)                           │
+│                                                              │
+│  • Passwords: PBKDF2-SHA256 hashed                          │
+│  • Fields: Fernet encrypted (title, tags, category)         │
+│  • Files: AES-128-CBC encrypted on disk                     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Security Best Practices Implemented
-
-✅ **Separation of Concerns**: Frontend encryption ≠ Backend storage encryption  
-✅ **Defense in Depth**: Multiple layers of security  
-✅ **Least Privilege**: Users only access what they need  
-✅ **Secure by Default**: All features require authentication  
-✅ **Audit Logging**: Complete traceability of all actions  
-✅ **Input Validation**: Both client-side and server-side  
-✅ **Error Handling**: No sensitive information in error messages  
-✅ **Session Management**: Automatic logout on inactivity  
-
-> 📖 For detailed security design and threat modeling, refer to the [SECURITY.md](SECURITY.md) file.
+> 📖 For detailed security documentation, see [SECURITY.md](SECURITY.md)
 
 ---
 
 ## 📡 API Documentation
 
-SmartDMS provides RESTful API endpoints for programmatic access.
+### REST API Endpoints
 
-### Authentication Required
-
-All API endpoints require authentication via session cookies.
-
-### Endpoints
-
-#### 📄 Documents API
+#### Documents API
 
 ```http
 GET /api/documents
+Authorization: Session Cookie Required
 ```
 
 **Response:**
@@ -899,41 +827,195 @@ GET /api/documents
 ]
 ```
 
-**Status Codes:**
-- `200 OK`: Success
-- `401 Unauthorized`: Not logged in
-- `403 Forbidden`: Insufficient permissions
+---
 
-#### 📁 Folder Operations
+## 📁 Project Structure
 
-```http
-GET /documents/folders/<folder_id>/contents
 ```
-
-**Response:**
-```json
-{
-  "folder": {
-    "id": 5,
-    "name": "Project Files"
-  },
-  "documents": [...],
-  "subfolders": [...]
-}
+SmartDMS/
+│
+├── 📂 backend/
+│   ├── 📄 app.py                    # Application factory
+│   ├── 📄 config.py                 # Configuration
+│   ├── 📄 forms.py                  # WTForms
+│   │
+│   ├── 📂 models/                   # 11 Database Models
+│   │   ├── user.py, document.py, folder.py
+│   │   ├── comment.py, share.py, activity.py
+│   │   └── notification.py, favorite.py
+│   │
+│   ├── 📂 routes/                   # 18 Blueprint Routes
+│   │   ├── auth.py, document.py, folder.py
+│   │   ├── dashboard.py, profile.py, recycle_bin.py
+│   │   └── [13 more routes]
+│   │
+│   ├── 📂 services/                 # Business Logic
+│   │   ├── document_service.py
+│   │   ├── encryption_service.py
+│   │   ├── storage_service.py
+│   │   ├── activity_service.py
+│   │   └── notification_service.py
+│   │
+│   └── 📂 extensions/               # Flask Extensions
+│       └── __init__.py (DB, Login, CSRF, Migrate)
+│
+├── 📂 frontend/
+│   ├── 📂 static/
+│   │   ├── 📂 css/
+│   │   │   └── style.css            # 800+ lines
+│   │   │
+│   │   ├── 📂 js/                   # 6 JavaScript Modules
+│   │   │   ├── base.notifications.js
+│   │   │   ├── dashboard.documents.js
+│   │   │   ├── dashboard.folders.js
+│   │   │   ├── dashboard.uploads.js
+│   │   │   ├── dashboard.filetypes.js
+│   │   │   └── dashboard.resources.js
+│   │   │
+│   │   └── 📂 screenshots/
+│   │
+│   └── 📂 templates/                # 25+ HTML Templates
+│       ├── base.html
+│       ├── components/ (_nav.html, _sidebar.html)
+│       └── [auth, documents, dashboard, profile, etc.]
+│
+├── 📂 storage/files/                # Encrypted Documents
+│
+├── 📂 tests/                        # pytest Suite
+│   ├── conftest.py
+│   ├── test_auth.py
+│   ├── test_documents.py
+│   └── test_folders.py
+│
+├── 📄 .env                          # Environment Variables
+├── 📄 run.py                        # Application Entry
+├── 📄 requirements.txt              # Dependencies
+├── 📄 README.md                     # This File
+├── 📄 SECURITY.md                   # Security Documentation
+└── 📄 deployment.txt                # Deployment Guide
 ```
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Common Issues and Solutions
+### Common Issues
 
-#### Issue: `ModuleNotFoundError: No module named 'backend'`
+#### MySQL Connection Error
 
-**Solution:**
-```bash
-# Make sure you're in the project root directory
-cd SmartDMS
+**Error:** `Can't connect to MySQL server`
 
-# Reinstall dependencies
-pip install -r requirements.
+**Solutions:**
+- Verify MySQL service is running
+- Check database credentials in `.env`
+- Ensure DB_HOST is `127.0.0.1`
+- Check firewall settings
+
+#### Module Not Found
+
+**Error:** `ModuleNotFoundError: No module named 'flask'`
+
+**Solutions:**
+- Ensure virtual environment is activated
+- Run: `pip install -r requirements.txt`
+- Check Python version: `python --version`
+
+#### Port Already in Use
+
+**Error:** `Address already in use`
+
+**Solutions:**
+- Change port in `run.py`: `app.run(port=5001)`
+- Kill process using port 5000
+- Restart system
+
+---
+
+## 🚀 Future Enhancements
+
+### Planned Features
+
+- [ ] Two-Factor Authentication (TOTP)
+- [ ] Email Notifications (Password Reset)
+- [ ] Rate Limiting (Brute Force Protection)
+- [ ] Malware Scanning (ClamAV Integration)
+- [ ] Advanced Search (Full-Text Search)
+- [ ] Document OCR (PDF Text Extraction)
+- [ ] REST API Documentation (Swagger/OpenAPI)
+- [ ] Docker Containerization
+- [ ] CI/CD Pipeline (GitHub Actions)
+- [ ] Performance Monitoring (Sentry)
+
+---
+
+## ⚠️ Disclaimer
+
+> **Educational & Internship Project**
+>
+> SmartDMS is developed for **academic and internship purposes**. While it demonstrates strong security practices, it requires:
+>
+> - ✅ Formal security audit
+> - ✅ Penetration testing
+> - ✅ Performance optimization
+> - ✅ Scalability improvements
+>
+> **before production deployment.**
+
+---
+
+## 🙏 Acknowledgements
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎓 Academic Support
+
+- **Faculty Members** - For guidance and mentorship
+- **College of Computer Management Studies, Vadu** - For academic support
+- **Peer Reviewers** - For feedback and suggestions
+
+</td>
+<td width="50%">
+
+### 🏢 Professional Support
+
+- **BISAG-N** - For internship opportunity
+- **Project Mentors** - For technical guidance
+- **Open Source Community** - For tools and libraries
+
+</td>
+</tr>
+</table>
+
+### 🛠️ Technologies & Libraries
+
+Special thanks to:
+- **Flask** - Web framework
+- **SQLAlchemy** - ORM
+- **Bootstrap** - UI framework
+- **Chart.js** - Data visualization
+- **CryptoJS** - Client-side encryption
+- **pytest** - Testing framework
+
+---
+
+<div align="center">
+
+## ⭐ Star This Repository
+
+If you found this project helpful, please consider giving it a star!
+
+---
+
+### 📞 Contact
+
+**Project Repository:** [github.com/pragneshraval288-create/SmartDMS](https://github.com/pragneshraval288-create/SmartDMS)
+
+**Lead Developer:** Pragnesh Raval
+
+---
+
+### 📄 License
+
+This project is developed for **educational purposes** as part of BCA Final Year Project and BISAG-N

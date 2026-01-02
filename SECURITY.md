@@ -1,4 +1,4 @@
-# 🛡️ Security Policy & Architecture
+# 🛡️ SmartDMS Security Documentation
 
 <div align="center">
 
@@ -6,7 +6,7 @@
 ![Encryption](https://img.shields.io/badge/Encryption-AES_256-blue?style=for-the-badge&logo=letsencrypt&logoColor=white)
 ![Authentication](https://img.shields.io/badge/Auth-PBKDF2_SHA256-red?style=for-the-badge&logo=auth0&logoColor=white)
 
-**Comprehensive security documentation for SmartDMS**
+**Comprehensive Security Architecture & Implementation Guide**
 
 </div>
 
@@ -16,570 +16,653 @@
 
 - [Overview](#-overview)
 - [Supported Versions](#-supported-versions)
-- [Security Architecture](#-security-architecture-overview)
+- [Security Architecture](#-security-architecture)
 - [Encryption Strategy](#-encryption-strategy)
-- [File Storage Security](#-secure-file-storage--handling)
-- [Access Control](#-role-based-access-control-rbac)
-- [Authentication & Sessions](#-authentication--session-security)
-- [Vulnerability Mitigation](#-vulnerability-mitigation-summary)
-- [Audit Logging](#-audit-logging--monitoring)
+- [Authentication & Authorization](#-authentication--authorization)
+- [File Storage Security](#-file-storage-security)
+- [Vulnerability Mitigation](#-vulnerability-mitigation)
+- [Audit Logging](#-audit-logging)
 - [Known Limitations](#-known-limitations)
-- [Reporting Vulnerabilities](#-reporting-a-vulnerability)
+- [Reporting Vulnerabilities](#-reporting-vulnerabilities)
 
 ---
 
 ## 🔍 Overview
 
-This document outlines the **security architecture, controls, and design decisions** implemented in **SmartDMS (Smart Document Management System)**.
+SmartDMS implements a **Defense-in-Depth** security strategy with multiple independent layers. This document outlines the security architecture, implementation details, and best practices followed in the development of this system.
 
-SmartDMS is developed as an **academic and internship project**, yet it adopts **enterprise-inspired security practices**, including:
+### Development Context
 
-- ✅ Layered encryption (data at rest & in transit)
-- ✅ Strict role-based access control (RBAC)
-- ✅ Secure session handling with Flask-Login
-- ✅ Comprehensive audit logging
-- ✅ Defense-in-depth security strategy
+- **Project Type:** BCA Final Year Project + BISAG-N Internship
+- **Security Level:** Enterprise-Inspired Academic Project
+- **Team Size:** 3 Developers
+- **Duration:** 6 Months
 
-> ⚠️ **Important Disclaimer:**  
-> SmartDMS is **not production-certified**. A professional security audit and penetration testing are **strongly recommended** before any real-world deployment.
+### Security Philosophy
 
----
+SmartDMS follows these core principles:
 
-## 🔧 Supported Versions
+✅ **Defense in Depth** - Multiple security layers  
+✅ **Least Privilege** - Users access only what they need  
+✅ **Secure by Default** - All features require authentication  
+✅ **Fail Securely** - Errors don't expose sensitive data  
+✅ **Complete Audit Trail** - All actions are logged  
 
-| Version | Supported | Security Updates | Status |
-| :---: | :---: | :--- | :---: |
-| **1.0.x** | ✅ | Active development & security fixes | 🟢 Current |
-| **< 1.0** | ❌ | Not supported | 🔴 Deprecated |
-
-> 💡 Always use the latest version for the most up-to-date security features.
+> ⚠️ **Important:** While SmartDMS implements strong security fundamentals, it is an academic project and requires professional security audit before production deployment.
 
 ---
 
-## 🏰 Security Architecture Overview
+## 📌 Supported Versions
 
-SmartDMS follows a **Defense-in-Depth** strategy with multiple independent security layers.
+| Version | Support Status | Security Updates |
+|:-------:|:--------------:|:----------------:|
+| **1.0.x** | ✅ Active | Regular updates |
+| **< 1.0** | ❌ Deprecated | No support |
 
-<div align="center">
+---
+
+## 🏰 Security Architecture
+
+### Layered Security Model
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    USER INTERFACE                        │
-│              (HTML/CSS/JavaScript + HTTPS)               │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│              AUTHENTICATION LAYER                        │
-│     Flask-Login + PBKDF2 Password Hashing (SHA-256)     │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│              AUTHORIZATION LAYER                         │
-│         Role-Based Access Control (RBAC)                 │
-│     Admin | Manager | User Permissions                  │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│              APPLICATION LAYER                           │
-│     Flask Backend + Business Logic + CSRF Protection     │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│              DATA LAYER                                  │
-│  MySQL Database (Metadata) + Encrypted File Storage      │
-│         Fernet Symmetric Encryption (AES-256)            │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│               LAYER 1: PRESENTATION SECURITY                 │
+│  • Input Validation (Client-Side)                            │
+│  • CryptoJS Password Encryption (AES-256-CBC)               │
+│  • XSS Prevention (Auto-escaping)                           │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│            LAYER 2: AUTHENTICATION & SESSION                 │
+│  • Flask-Login Session Management                            │
+│  • Password Decryption (OpenSSL Compatible)                 │
+│  • PBKDF2-SHA256 Hashing (600k iterations)                  │
+│  • Secure Cookies (HttpOnly, SameSite, Secure)             │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│               LAYER 3: AUTHORIZATION (RBAC)                  │
+│  • Role-Based Access Control (Admin/User)                   │
+│  • Route-Level Protection (@login_required)                 │
+│  • Object-Level Authorization                               │
+│  • IDOR Prevention                                          │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│             LAYER 4: APPLICATION SECURITY                    │
+│  • CSRF Protection (Flask-WTF)                              │
+│  • SQL Injection Prevention (SQLAlchemy ORM)                │
+│  • Input Validation (WTForms)                               │
+│  • Secure Error Handling                                    │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│               LAYER 5: DATA ENCRYPTION                       │
+│  • Database Field Encryption (Fernet)                       │
+│  • File Encryption at Rest (Fernet AES-128-CBC)            │
+│  • UUID-Based File Naming                                   │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│             LAYER 6: AUDIT & MONITORING                      │
+│  • Comprehensive Activity Logging                            │
+│  • IP Address Tracking                                       │
+│  • Timestamp Recording (IST)                                │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-*Layered security architecture ensuring multiple defense points*
-
-</div>
-
-**Key Principle:** Compromising a single layer does **not** expose sensitive data or system integrity.
 
 ---
 
 ## 🔐 Encryption Strategy
 
-### 🔹 1. Data in Transit (Client → Server)
+### 1. Frontend Password Encryption
 
-<table>
-<tr>
-<td width="50%">
+**Implementation:** `login.html` (Line 98-111)
 
-#### Client-Side Encryption
-
-- User credentials are **encrypted client-side using AES** (CryptoJS) before submission
-- Provides an **additional obfuscation layer** on top of HTTPS
-- Protects against potential network sniffing
-
-</td>
-<td width="50%">
-
-#### Transport Layer Security
-
-- All production deployments **must use TLS/HTTPS**
-- Client-side encryption is a *defense-in-depth enhancement*
-- **Does not replace HTTPS** requirement
-
-</td>
-</tr>
-</table>
-
-**Technologies Used:**
-
+```javascript
+// Client-Side Encryption (CryptoJS)
+const secretKey = "MY_SECRET_KEY_123";
+const encryptedPassword = CryptoJS.AES.encrypt(
+    plainPassword, 
+    secretKey
+).toString();
 ```
-Frontend: CryptoJS (AES Encryption)
-    ↕
-Backend: Python Cryptography Libraries (Decryption)
-    ↕
-Network: TLS/HTTPS (Required for Production)
-```
+
+**Purpose:**
+- Adds obfuscation layer on top of HTTPS
+- Protects against network sniffing
+- Defense-in-depth enhancement
+
+**Technology:**
+- Algorithm: AES-256-CBC
+- Library: CryptoJS 4.1.1
+- Key: Shared secret (server-side config)
 
 ---
 
-### 🔹 2. Data at Rest (Server Storage)
+### 2. Backend Password Decryption
 
-#### 🔑 Password Storage
+**Implementation:** `auth.py` (Line 22-54)
 
-| Component | Implementation |
-|-----------|----------------|
-| **Algorithm** | PBKDF2 with SHA-256 |
-| **Salt** | Unique per-password salt (auto-generated) |
-| **Iterations** | High iteration count for key derivation |
-| **Library** | Werkzeug Security |
-| **Storage** | Only hashed passwords stored in database |
+```python
+def decrypt_cryptojs_aes(encrypted_text):
+    """
+    OpenSSL-compatible MD5 key derivation
+    Matches CryptoJS encryption format
+    """
+    secret_key = current_app.config.get("FRONTEND_SECRET_KEY")
+    
+    # Base64 decode
+    encrypted_bytes = base64.b64decode(encrypted_text)
+    
+    # Extract salt (bytes 8-16)
+    salt = encrypted_bytes[8:16]
+    ciphertext = encrypted_bytes[16:]
+    
+    # MD5 key derivation (OpenSSL compatible)
+    key, iv = get_key_and_iv(secret_key.encode(), salt)
+    
+    # AES-CBC decryption
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    decrypted = unpad(cipher.decrypt(ciphertext), AES.block_size)
+    
+    return decrypted.decode('utf-8')
+```
 
-✅ **Security Guarantee:** Plain-text passwords are **never** stored or logged anywhere in the system.
+**Security Features:**
+- Compatible with CryptoJS format
+- Salted encryption
+- Proper key derivation
+- Secure padding removal
 
 ---
 
-#### 📄 Document Encryption
+### 3. Password Storage
 
-| Feature | Implementation |
-|---------|----------------|
-| **Algorithm** | Fernet (Symmetric Encryption - AES-128 CBC) |
-| **Key Management** | Server-side encryption key (environment variable) |
-| **Storage** | All files encrypted before disk write |
-| **Access** | Files decrypted only in memory when authorized |
-| **Key Rotation** | Supported (requires re-encryption of existing files) |
+**Implementation:** `user.py` (Line 73-82)
 
-**Encryption Flow:**
+```python
+def set_password(self, password: str) -> None:
+    self.password_hash = generate_password_hash(
+        password,
+        method="pbkdf2:sha256",
+        salt_length=16
+    )
 
+def check_password(self, password: str) -> bool:
+    return check_password_hash(self.password_hash, password)
 ```
-Upload → Encrypt (Fernet) → Store on Disk (Encrypted)
-                              ↓
-Download Request → Authorization Check → Decrypt in Memory → Serve to User
-```
+
+**Specifications:**
+- **Algorithm:** PBKDF2 with SHA-256
+- **Iterations:** 600,000 (high security)
+- **Salt Length:** 16 bytes (unique per password)
+- **Library:** Werkzeug Security
+
+**Security Guarantee:** Plain-text passwords are **never** stored or logged.
 
 ---
 
-## 🗄️ Secure File Storage & Handling
+### 4. Database Field Encryption
 
-### 📦 Storage Architecture
+**Implementation:** `document.py` (Line 75-91)
 
-<table>
-<tr>
-<td width="50%">
+```python
+class Document(db.Model):
+    # Encrypted columns (stored encrypted in DB)
+    _title = db.Column("title", db.String(255))
+    _tags = db.Column("tags", db.String(255))
+    _category = db.Column("category", db.String(100))
+    
+    @property
+    def title(self):
+        return EncryptionService.decrypt_text(self._title)
+    
+    @title.setter
+    def title(self, value):
+        self._title = EncryptionService.encrypt_text(value)
+```
 
-#### Encrypted Storage
-- All documents stored in **encrypted form**
-- Files remain **unreadable without encryption key**
-- Encryption key stored separately from data
-- Files decrypted **only in memory** during access
+**Technology:**
+- **Algorithm:** Fernet (Symmetric Encryption)
+- **Key:** Server-side encryption key (environment variable)
+- **Fields Encrypted:** title, tags, category
 
-</td>
-<td width="50%">
+**Advantage:** Even with database access, sensitive fields remain unreadable.
 
-#### UUID-Based Naming
-- Files stored using **randomized UUIDs**
-- Original filenames stored only in database
-- Prevents path traversal attacks
+---
+
+### 5. File Encryption at Rest
+
+**Implementation:** `storage_service.py` (Line 27-60)
+
+```python
+def save_encrypted_file(file_storage: FileStorage):
+    # Read file data
+    data = file_storage.read()
+    
+    # Encrypt using Fernet
+    fernet = _get_fernet()
+    encrypted = fernet.encrypt(data)
+    
+    # Generate UUID filename
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    
+    # Save encrypted file
+    with open(stored_path, "wb") as f_out:
+        f_out.write(encrypted)
+```
+
+**Security Features:**
+- **Algorithm:** Fernet (AES-128-CBC + HMAC)
+- **Filename:** UUID v4 (prevents predictable access)
+- **Storage:** Encrypted bytes on disk
+- **Access:** Decrypted only in memory during download
+
+---
+
+## 🔑 Authentication & Authorization
+
+### Authentication Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      USER LOGIN                              │
+│                                                              │
+│  1. User enters credentials on login page                   │
+│  2. JavaScript encrypts password with CryptoJS             │
+│  3. Encrypted payload sent to /auth/login                  │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  BACKEND PROCESSING                          │
+│                                                              │
+│  4. Flask receives encrypted password                        │
+│  5. Backend decrypts using OpenSSL-compatible method        │
+│  6. Queries database for user                               │
+│  7. Verifies password hash (PBKDF2-SHA256)                  │
+│  8. Creates secure session (Flask-Login)                    │
+└──────────────────────┬───────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   SESSION CREATED                            │
+│                                                              │
+│  9. User redirected to dashboard                            │
+│  10. Activity logged (IP + timestamp)                       │
+│  11. Session cookie set (HttpOnly, SameSite)               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Role-Based Access Control (RBAC)
+
+**Implementation:** Throughout application
+
+```python
+# Route-level protection
+@document_bp.route("/upload")
+@login_required
+def upload():
+    # Only authenticated users can access
+    
+# Role-based authorization
+if not current_user.is_admin:
+    abort(403)
+    
+# Object-level authorization
+def _user_can_view(doc: Document) -> bool:
+    if current_user.is_admin:
+        return True
+    if doc.uploaded_by == current_user.id:
+        return True
+    # Check if shared with user
+    return DocumentShare.query.filter_by(
+        document_id=doc.id,
+        shared_with_id=current_user.id
+    ).first() is not None
+```
+
+**Role Permissions:**
+
+| Permission | Admin | User |
+|:-----------|:-----:|:----:|
+| View all documents | ✅ | ❌ |
+| View own documents | ✅ | ✅ |
+| View shared documents | ✅ | ✅ |
+| Upload documents | ✅ | ✅ |
+| Delete any document | ✅ | ❌ |
+| Delete own document | ✅ | ✅ |
+| User management | ✅ | ❌ |
+| System settings | ✅ | ❌ |
+| Audit logs | ✅ | ❌ |
+
+---
+
+## 📁 File Storage Security
+
+### Secure File Naming
+
+**Problem:** Predictable filenames enable unauthorized access
+
+**Solution:** UUID v4 randomization
+
+```python
+# Original filename: "confidential_report.pdf"
+# Stored as: "a3f2b8c9d1e4f5a6b7c8d9e0f1a2b3c4.pdf"
+```
+
+**Benefits:**
+- Prevents file enumeration attacks
 - Eliminates filename collisions
-- No predictable file access patterns
-
-</td>
-</tr>
-</table>
+- Obscures file content from filesystem
 
 ---
 
-### ✅ File Validation & Sanitization
+### File Type Validation
 
-#### Whitelisted File Extensions
+**Implementation:** `storage_service.py` + `config.py`
 
 ```python
 ALLOWED_EXTENSIONS = {
-    'pdf', 'doc', 'docx',  # Documents
-    'xls', 'xlsx',         # Spreadsheets
-    'ppt', 'pptx',         # Presentations
-    'txt',                 # Text files
-    'png', 'jpg', 'jpeg',  # Images
-    'zip'                  # Archives
+    'pdf', 'doc', 'docx',     # Documents
+    'xls', 'xlsx',            # Spreadsheets
+    'ppt', 'pptx',            # Presentations
+    'txt',                    # Text files
+    'png', 'jpg', 'jpeg',     # Images
+    'zip'                     # Archives
 }
+
+def allowed_file(filename: str) -> bool:
+    return (
+        '.' in filename and
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
 ```
 
-#### Security Checks
+**Blocked Extensions:** `.exe`, `.bat`, `.sh`, `.dll`, `.js`, `.jar`
 
-| Check | Purpose |
-|-------|---------|
-| **Extension Validation** | Block executable and unsafe file types |
-| **MIME Type Verification** | Prevent extension spoofing |
-| **File Size Limits** | Prevent resource exhaustion |
-| **Filename Sanitization** | Remove special characters and path separators |
-
-❌ **Blocked File Types:** `.exe`, `.bat`, `.sh`, `.dll`, `.js`, `.jar`, and other executable formats
+**Additional Checks:**
+- Filename sanitization (`secure_filename()`)
+- File size limits (32 MB)
+- MIME type verification (planned)
 
 ---
 
-## 👥 Role-Based Access Control (RBAC)
-
-SmartDMS enforces authorization at both **route level** and **object level**.
-
-### 🎭 User Roles & Permissions
+## 🛡️ Vulnerability Mitigation
 
 <table>
 <tr>
-<th width="20%">Role</th>
-<th width="40%">Permissions</th>
-<th width="40%">Restrictions</th>
-</tr>
-<tr>
-<td align="center"><strong>🔑 Admin</strong></td>
-<td>
-• Full system access<br>
-• User management<br>
-• Document oversight<br>
-• System configuration<br>
-• Audit log access
-</td>
-<td>
-• Cannot bypass encryption<br>
-• Actions are logged<br>
-• Subject to audit trail
-</td>
-</tr>
-<tr>
-<td align="center"><strong>👔 Manager</strong></td>
-<td>
-• Department-level controls<br>
-• Team document management<br>
-• User permissions in dept<br>
-• Document sharing controls
-</td>
-<td>
-• Limited to assigned department<br>
-• Cannot access other dept data<br>
-• Cannot modify system settings
-</td>
-</tr>
-<tr>
-<td align="center"><strong>👤 User</strong></td>
-<td>
-• Own documents access<br>
-• Shared documents (read/write)<br>
-• Personal settings<br>
-• Document upload/download
-</td>
-<td>
-• Cannot access others' documents<br>
-• Cannot modify system settings<br>
-• Cannot manage users
-</td>
-</tr>
-</table>
-
----
-
-### 🔒 IDOR (Insecure Direct Object Reference) Protection
-
-Every document and folder operation validates:
-
-1. ✅ **Ownership** - Is the user the owner?
-2. ✅ **Role Permissions** - Does the user's role allow this action?
-3. ✅ **Explicit Sharing** - Has the document been explicitly shared with this user?
-
-**Security Guarantee:** Manipulating document IDs in URLs **cannot** expose unauthorized data.
-
-**Example Protection:**
-
-```python
-# Before allowing document access:
-if not (user.id == document.owner_id or 
-        user.role == 'admin' or 
-        document.id in user.shared_documents):
-    return abort(403)  # Forbidden
-```
-
----
-
-## 🔑 Authentication & Session Security
-
-### 🛂 Authentication Implementation
-
-| Feature | Implementation |
-|---------|----------------|
-| **Framework** | Flask-Login |
-| **Method** | Session-based authentication |
-| **Password Hashing** | PBKDF2-SHA256 with salt |
-| **Session Storage** | Server-side (encrypted cookies) |
-| **Remember Me** | Optional, with secure token |
-
----
-
-### 🍪 Secure Session Cookies
-
-All session cookies are configured with multiple security flags:
-
-| Flag | Purpose | Status |
-|------|---------|--------|
-| **HttpOnly** | Prevents JavaScript access to cookies | ✅ Enabled |
-| **Secure** | Ensures cookies sent only over HTTPS | ✅ Production |
-| **SameSite** | Prevents CSRF attacks | ✅ Lax |
-| **Path** | Limits cookie scope | ✅ Configured |
-| **Max-Age** | Automatic session expiration | ✅ Enabled |
-
----
-
-### 🔐 Session Security Features
-
-- ✅ **Automatic Logout on Inactivity** - Sessions expire after configured timeout
-- ✅ **Forced Logout on Root Access** - Prevents stale sessions on shared systems
-- ✅ **Session Fixation Prevention** - New session ID generated on login
-- ✅ **Concurrent Session Management** - Optional limit on simultaneous logins
-- ✅ **IP Validation** - Optional IP address binding to sessions
-
----
-
-## 🛡️ Vulnerability Mitigation Summary
-
-<table>
-<tr>
-<th width="30%">Threat / Attack</th>
-<th width="50%">Mitigation Strategy</th>
+<th width="30%">Threat</th>
+<th width="50%">Mitigation</th>
 <th width="20%">Status</th>
 </tr>
 <tr>
 <td><strong>SQL Injection</strong></td>
-<td>SQLAlchemy ORM with parameterized queries<br>No raw SQL execution</td>
+<td>
+• SQLAlchemy ORM with parameterized queries<br>
+• No raw SQL execution<br>
+• Input validation via WTForms
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>Cross-Site Scripting (XSS)</strong></td>
-<td>Jinja2 auto-escaping for all templates<br>HttpOnly cookies<br>Content Security Policy headers</td>
+<td>
+• Jinja2 auto-escaping for all templates<br>
+• HttpOnly cookies<br>
+• Content Security Policy headers (recommended)
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>Cross-Site Request Forgery (CSRF)</strong></td>
-<td>Flask-WTF CSRF tokens on all forms<br>SameSite cookie attribute</td>
+<td>
+• Flask-WTF CSRF tokens on all forms<br>
+• SameSite cookie attribute<br>
+• Token validation on POST requests
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>Session Hijacking</strong></td>
-<td>Secure cookie flags (HttpOnly, Secure)<br>Session expiration<br>Optional IP validation</td>
+<td>
+• Secure cookie flags (HttpOnly, Secure, SameSite)<br>
+• Session expiration<br>
+• Regenerate session ID on login
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>IDOR (Insecure Direct Object Reference)</strong></td>
-<td>Ownership and role-based authorization checks<br>Object-level permission validation</td>
+<td>
+• Ownership checks on all document operations<br>
+• Role-based authorization<br>
+• Share validation for shared documents
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>Path Traversal</strong></td>
-<td>UUID-based file naming<br>Filename sanitization<br>No direct file path exposure</td>
+<td>
+• UUID-based file naming<br>
+• secure_filename() sanitization<br>
+• No direct file path exposure to users
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>Brute Force Attacks</strong></td>
-<td>Account approval workflow<br>Rate limiting (recommended for production)</td>
+<td>
+• User approval workflow<br>
+• Rate limiting (recommended for production)
+</td>
 <td align="center">⚠️ Partial</td>
 </tr>
 <tr>
 <td><strong>File Upload Attacks</strong></td>
-<td>Extension whitelist<br>MIME type validation<br>File size limits<br>Virus scanning (recommended)</td>
+<td>
+• Extension whitelist<br>
+• File size limits (32 MB)<br>
+• Filename sanitization<br>
+• Malware scanning (recommended)
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 <tr>
 <td><strong>Information Disclosure</strong></td>
-<td>Generic error messages<br>No stack traces in production<br>Audit logging</td>
+<td>
+• Generic error messages<br>
+• No stack traces in production<br>
+• Audit logging without sensitive data
+</td>
 <td align="center">✅ Protected</td>
 </tr>
 </table>
 
 ---
 
-## 📋 Audit Logging & Monitoring
+## 📋 Audit Logging
 
-SmartDMS maintains **detailed audit logs** for accountability, compliance, and security monitoring.
+### Logged Events
 
-### 📝 Logged Events
-
-<table>
-<tr>
-<td width="50%">
-
-#### User Actions
-- ✅ User login (successful/failed)
-- ✅ User logout
+**User Actions:**
+- ✅ Login (successful/failed)
+- ✅ Logout
+- ✅ Registration
 - ✅ Password changes
-- ✅ Account creation
 - ✅ Profile updates
 
-</td>
-<td width="50%">
+**Document Operations:**
+- ✅ Upload
+- ✅ Download
+- ✅ Update/Version
+- ✅ Delete (soft/hard)
+- ✅ Share
+- ✅ Archive/Restore
 
-#### Document Operations
-- ✅ Document upload
-- ✅ Document download
-- ✅ Document update
-- ✅ Document deletion
-- ✅ Document sharing
-- ✅ Permission changes
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-#### Administrative Actions
-- ✅ User role modifications
-- ✅ System configuration changes
+**Administrative Actions:**
 - ✅ User approval/rejection
-- ✅ Bulk operations
+- ✅ Role modifications
+- ✅ System configuration changes
 
-</td>
-<td width="50%">
-
-#### Security Events
+**Security Events:**
 - ✅ Failed login attempts
 - ✅ Unauthorized access attempts
 - ✅ Session expirations
-- ✅ Suspicious activities
 
-</td>
-</tr>
-</table>
+### Log Entry Structure
 
----
+**Implementation:** `activity.py`
 
-### 📊 Log Entry Structure
+```python
+class ActivityLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    action = db.Column(db.String(100), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"))
+    details = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+```
 
-Each audit log entry records:
+### Log Retention
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| **User ID** | Unique identifier of the user | `user_123` |
-| **Action Type** | Type of action performed | `DOCUMENT_UPLOAD` |
-| **Timestamp** | Date and time of action | `2025-12-31 14:30:45` |
-| **IP Address** | Client IP address | `192.168.1.100` |
-| **Resource** | Affected resource (if applicable) | `document_456` |
-| **Status** | Success or failure | `SUCCESS` / `FAILED` |
-| **Details** | Additional context | `File: report.pdf, Size: 2.5MB` |
-
----
-
-### 🔍 Log Retention & Access
-
-- **Retention Period:** Logs retained for **90 days** by default
-- **Access Control:** Only administrators can view audit logs
-- **Export:** Logs can be exported for compliance reporting
-- **Integrity:** Logs are write-only and cannot be modified
+- **Retention Period:** 90 days (default)
+- **Access Control:** Admin only
+- **Export:** Supported for compliance
+- **Integrity:** Write-only, cannot be modified
 
 ---
 
 ## ⚠️ Known Limitations
 
-While SmartDMS implements strong security fundamentals, the following limitations exist:
-
 <table>
 <tr>
 <th width="40%">Limitation</th>
-<th width="60%">Recommendation for Production</th>
+<th width="60%">Recommendation</th>
 </tr>
 <tr>
 <td>🔴 <strong>Password Reset Flow</strong></td>
-<td>Implement token-based email verification with time-limited reset links</td>
+<td>
+• Implement email-based token verification<br>
+• Add time-limited reset links<br>
+• Prevent user enumeration
+</td>
 </tr>
 <tr>
 <td>🔴 <strong>Rate Limiting</strong></td>
-<td>Add Flask-Limiter or similar middleware to prevent brute force attacks</td>
+<td>
+• Add Flask-Limiter middleware<br>
+• Implement per-IP and per-user limits<br>
+• Configure lockout after failed attempts
+</td>
 </tr>
 <tr>
 <td>🔴 <strong>Malware Scanning</strong></td>
-<td>Integrate ClamAV or similar antivirus for uploaded file scanning</td>
+<td>
+• Integrate ClamAV or similar antivirus<br>
+• Scan files before storage<br>
+• Quarantine suspicious files
+</td>
 </tr>
 <tr>
 <td>🟡 <strong>Two-Factor Authentication</strong></td>
-<td>Implement TOTP-based 2FA for enhanced account security</td>
+<td>
+• Implement TOTP-based 2FA<br>
+• Support authenticator apps<br>
+• Backup codes for account recovery
+</td>
 </tr>
 <tr>
-<td>🟡 <strong>API Rate Limiting</strong></td>
-<td>Add per-user/per-IP rate limits for API endpoints</td>
+<td>🟡 <strong>Content Security Policy</strong></td>
+<td>
+• Define strict CSP headers<br>
+• Whitelist trusted sources<br>
+• Report violations
+</td>
 </tr>
 <tr>
-<td>🟡 <strong>Security Headers</strong></td>
-<td>Add comprehensive security headers (CSP, HSTS, X-Frame-Options)</td>
-</tr>
-<tr>
-<td>🟡 <strong>Automated Backups</strong></td>
-<td>Implement automated encrypted database and file backups</td>
+<td>🟡 <strong>HSTS (HTTP Strict Transport Security)</strong></td>
+<td>
+• Enable HSTS in production<br>
+• Force HTTPS connections<br>
+• Prevent protocol downgrade attacks
+</td>
 </tr>
 </table>
 
 **Legend:**
-- 🔴 **Critical** - Should be addressed before production
+- 🔴 **Critical** - Must be addressed before production
 - 🟡 **Important** - Recommended for enhanced security
-
-> 💡 These limitations are **intentional trade-offs** for an academic project but should be addressed for production deployment.
 
 ---
 
-## 🐞 Reporting a Vulnerability
+## 🐛 Reporting Vulnerabilities
 
-As this is an **educational and internship-oriented project**, security issues should be reported directly to the developer.
+### Contact Information
 
-<table>
-<tr>
-<td width="50%">
+As this is an **academic and internship project**, security issues should be reported to:
 
-### 📧 Contact Information
-
-- **Developer:** Pragnesh Raval
+**Primary Contact:**
+- **Name:** Pragnesh Raval
 - **Email:** pragneshraval288@gmail.com
 - **GitHub:** [@pragneshraval288-create](https://github.com/pragneshraval288-create)
 
-</td>
-<td width="50%">
+**Team Members:**
+- Parth Gadhavi (Backend Developer)
+- Yash Raval (Frontend Developer)
 
-### ⏱️ Response Time
+### Response Timeline
 
 - **Acknowledgment:** Within 24 hours
 - **Initial Assessment:** Within 48 hours
-- **Resolution Timeline:** Depends on severity
+- **Resolution:** Depends on severity
 
-</td>
-</tr>
-</table>
+### Reporting Guidelines
 
----
-
-### 🔍 What to Include in Your Report
-
-When reporting a security vulnerability, please include:
+Please include:
 
 1. **Description** - Clear explanation of the vulnerability
-2. **Steps to Reproduce** - Detailed steps to replicate the issue
-3. **Impact** - Potential security impact and severity
+2. **Steps to Reproduce** - Detailed reproduction steps
+3. **Impact Assessment** - Potential security impact
 4. **Proof of Concept** - Code or screenshots (if applicable)
 5. **Suggested Fix** - Recommended mitigation (optional)
 
 ---
 
-## 📌 Final Disclaimer & Legal Notice
+## 📜 Security Best Practices
+
+### For Developers
+
+If extending SmartDMS:
+
+✅ **Always validate input** - Never trust user data  
+✅ **Use parameterized queries** - Prevent SQL injection  
+✅ **Implement least privilege** - Limit access by default  
+✅ **Log security events** - Maintain audit trail  
+✅ **Keep dependencies updated** - Regular security patches  
+✅ **Use HTTPS in production** - Encrypt data in transit  
+✅ **Sanitize file uploads** - Validate and scan files  
+✅ **Implement rate limiting** - Prevent abuse  
+✅ **Use secure headers** - CSP, HSTS, X-Frame-Options  
+✅ **Test security controls** - Regular penetration testing  
+
+### For Deployment
+
+Before production deployment:
+
+✅ **Security Audit** - Professional third-party assessment  
+✅ **Penetration Testing** - Identify vulnerabilities  
+✅ **Code Review** - Expert security review  
+✅ **Dependency Scanning** - Check for known vulnerabilities  
+✅ **Configuration Hardening** - Secure server settings  
+✅ **Backup Strategy** - Regular encrypted backups  
+✅ **Monitoring Setup** - Real-time security monitoring  
+✅ **Incident Response Plan** - Prepare for security events  
+
+---
+
+## 🔒 Final Security Statement
 
 <div align="center">
 
@@ -587,50 +670,33 @@ When reporting a security vulnerability, please include:
 
 **SmartDMS is designed for educational and demonstration purposes.**
 
-</div>
+While incorporating **strong security fundamentals** and **enterprise-inspired practices**, this system must **NOT** be deployed in production without:
 
-While SmartDMS incorporates **strong security fundamentals** and **enterprise-inspired design patterns**, it must **NOT** be considered production-ready without:
-
-- ✅ **Formal Security Audit** - Professional third-party security assessment
-- ✅ **Penetration Testing** - Comprehensive testing for vulnerabilities
-- ✅ **Code Review** - Expert review of security-critical components
-- ✅ **Compliance Verification** - Alignment with relevant standards (GDPR, HIPAA, etc.)
-- ✅ **Load Testing** - Performance and stability under production conditions
+✅ Formal Security Audit  
+✅ Penetration Testing  
+✅ Code Review  
+✅ Compliance Verification  
+✅ Load Testing  
 
 ---
 
-### 📜 Security Best Practices for Deployment
+### 📘 Security Philosophy
 
-If you plan to use SmartDMS as a foundation for a production system:
+*"Security is not a product, but a process."*  
+*— Bruce Schneier*
 
-1. **Environment Hardening**
-   - Use production-grade web servers (Gunicorn + Nginx)
-   - Enable HTTPS with valid SSL certificates
-   - Configure firewall rules and network security
-
-2. **Dependency Management**
-   - Regularly update all dependencies
-   - Monitor for security advisories
-   - Use automated vulnerability scanning
-
-3. **Monitoring & Alerting**
-   - Implement real-time security monitoring
-   - Set up alerts for suspicious activities
-   - Regular log review and analysis
-
-4. **Backup & Recovery**
-   - Automated encrypted backups
-   - Tested disaster recovery procedures
-   - Regular backup verification
+This project demonstrates that process through:
+- Defense-in-depth architecture
+- Secure coding practices
+- Comprehensive documentation
+- Ongoing improvement mindset
 
 ---
 
-<div align="center">
+**Developed with 🛡️ by:**
 
-### 🔒 Security is a Journey, Not a Destination
+**Pragnesh Raval • Parth Gadhavi • Yash Raval**
 
-**Made with 🛡️ by Pragnesh Raval**
-
-*For educational and learning purposes*
+*BCA Final Year Project | BISAG-N Internship*
 
 </div>
