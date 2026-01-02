@@ -53,7 +53,7 @@
 
 SmartDMS follows industry-standard security practices including:
 
-- 🔐 **End-to-end encryption** for sensitive data
+- 🔐 **Multi-layer encryption for credentials and stored files** for sensitive data
 - 🛡️ **Frontend password encryption** using CryptoJS (AES-256-CBC)
 - 🔓 **Backend decryption** with OpenSSL-compatible key derivation
 - 📁 **File encryption at rest** using Fernet encryption
