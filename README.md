@@ -109,15 +109,18 @@ SmartDMS follows industry-standard security practices including:
 
 **Pragnesh Raval**
 
-*Lead Developer*
+_Lead Developer_
 
 [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pragneshraval288-create)
 
 **Responsibilities:**
-- Project Architecture
-- Backend Development
-- Security Implementation
-- Database Design
+
+- Project Architecture & Core Setup
+- Security & Encryption Implementation
+- User & Authentication Module (Model, Routes, Templates)
+- Dashboard Analytics Module
+- Database Schema Design
+- Documentation & Deployment
 
 </td>
 <td align="center" width="33%">
@@ -126,13 +129,16 @@ SmartDMS follows industry-standard security practices including:
 
 **Parth Gadhavi**
 
-*Backend Developer*
+_Backend Developer_
 
 **Responsibilities:**
-- API Development
-- Business Logic
-- Service Layer
-- Testing
+
+-Document Management Module (Model, Routes, Service)
+-Folder Management Module (Model, Routes, Service)
+-Recycle Bin & Versioning Module
+-Storage & Activity Services
+-Testing Suite (pytest)
+-API Development
 
 </td>
 <td align="center" width="33%">
@@ -141,13 +147,16 @@ SmartDMS follows industry-standard security practices including:
 
 **Yash Raval**
 
-*Frontend Developer*
+_Frontend Developer_
 
 **Responsibilities:**
-- UI/UX Design
-- Frontend Development
-- JavaScript Modules
-- Responsive Design
+
+-UI/UX Design & CSS Architecture (800+ lines)
+-All JavaScript Modules (6 modules)
+-Share & Collaboration Module
+-Comments & Notifications Module
+-Base Templates & Components
+-Responsive Design Implementation
 
 </td>
 </tr>
@@ -298,10 +307,10 @@ SmartDMS follows industry-standard security practices including:
 
 <div align="center">
 
-| Role | Icon | Permissions | Restrictions |
-|:----:|:----:|-------------|--------------|
-| **Admin** | 🔑 | • Full system access<br>• User management<br>• Document oversight<br>• System configuration<br>• Audit log access<br>• User approval/rejection | • Actions are logged<br>• Subject to audit trail |
-| **User** | 👤 | • Own documents access<br>• Shared documents (read/write)<br>• Personal settings<br>• Folder management<br>• Document versioning | • Cannot access others' documents<br>• Cannot modify system settings<br>• Cannot manage users |
+|   Role    | Icon | Permissions                                                                                                                                    | Restrictions                                                                                  |
+| :-------: | :--: | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Admin** |  🔑  | • Full system access<br>• User management<br>• Document oversight<br>• System configuration<br>• Audit log access<br>• User approval/rejection | • Actions are logged<br>• Subject to audit trail                                              |
+| **User**  |  👤  | • Own documents access<br>• Shared documents (read/write)<br>• Personal settings<br>• Folder management<br>• Document versioning               | • Cannot access others' documents<br>• Cannot modify system settings<br>• Cannot manage users |
 
 </div>
 
@@ -518,12 +527,12 @@ SmartDMS follows industry-standard security practices including:
 
 Ensure you have the following installed:
 
-| Requirement | Version | Download Link |
-|-------------|---------|---------------|
-| Python | 3.10 or higher | [python.org](https://www.python.org/downloads/) |
-| MySQL Server | 8.0 or higher | [mysql.com](https://dev.mysql.com/downloads/) |
-| pip | Latest version | Included with Python |
-| Git | Latest version | [git-scm.com](https://git-scm.com/downloads) |
+| Requirement  | Version        | Download Link                                   |
+| ------------ | -------------- | ----------------------------------------------- |
+| Python       | 3.10 or higher | [python.org](https://www.python.org/downloads/) |
+| MySQL Server | 8.0 or higher  | [mysql.com](https://dev.mysql.com/downloads/)   |
+| pip          | Latest version | Included with Python                            |
+| Git          | Latest version | [git-scm.com](https://git-scm.com/downloads)    |
 
 ### Installation Steps
 
@@ -537,12 +546,14 @@ cd SmartDMS
 #### 2️⃣ Create Virtual Environment
 
 **Windows:**
+
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
 **Linux/macOS:**
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -620,6 +631,7 @@ Access at: **http://127.0.0.1:5000**
 #### 7️⃣ Create Admin User
 
 **Via Registration:**
+
 1. Navigate to: `http://127.0.0.1:5000/auth/register`
 2. Register with role "Admin"
 3. Admin accounts are auto-approved
@@ -632,11 +644,11 @@ SmartDMS includes a comprehensive test suite using **pytest**.
 
 ### Test Coverage
 
-| Test Category | Files | Status |
-|---------------|-------|--------|
-| Authentication | test_auth.py | ✅ Passing |
-| Document Management | test_documents.py | ✅ Passing |
-| Folder Operations | test_folders.py (5 tests) | ✅ Passing |
+| Test Category       | Files                     | Status     |
+| ------------------- | ------------------------- | ---------- |
+| Authentication      | test_auth.py              | ✅ Passing |
+| Document Management | test_documents.py         | ✅ Passing |
+| Folder Operations   | test_folders.py (5 tests) | ✅ Passing |
 
 ### Running Tests
 
@@ -684,30 +696,34 @@ tests/test_folders.py .....                                    [100%]
 <div align="center">
 
 ### 🔐 Login Page
+
 ![Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Login.png)
 
-*Secure authentication with frontend AES-256 encryption*
+_Secure authentication with frontend AES-256 encryption_
 
 ---
 
 ### 📊 Dashboard
+
 ![Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Dashboard.png)
 
-*Analytics dashboard with charts and system monitoring*
+_Analytics dashboard with charts and system monitoring_
 
 ---
 
 ### 📋 Document Management
+
 ![Documents](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/documents.png)
 
-*Comprehensive document and folder management*
+_Comprehensive document and folder management_
 
 ---
 
 ### 📤 Upload Interface
+
 ![Upload](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Upload.png)
 
-*Secure document upload with encryption*
+_Secure document upload with encryption_
 
 </div>
 
@@ -811,6 +827,7 @@ Authorization: Session Cookie Required
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -906,6 +923,7 @@ SmartDMS/
 **Error:** `Can't connect to MySQL server`
 
 **Solutions:**
+
 - Verify MySQL service is running
 - Check database credentials in `.env`
 - Ensure DB_HOST is `127.0.0.1`
@@ -916,6 +934,7 @@ SmartDMS/
 **Error:** `ModuleNotFoundError: No module named 'flask'`
 
 **Solutions:**
+
 - Ensure virtual environment is activated
 - Run: `pip install -r requirements.txt`
 - Check Python version: `python --version`
@@ -925,6 +944,7 @@ SmartDMS/
 **Error:** `Address already in use`
 
 **Solutions:**
+
 - Change port in `run.py`: `app.run(port=5001)`
 - Kill process using port 5000
 - Restart system
@@ -991,6 +1011,7 @@ SmartDMS/
 ### 🛠️ Technologies & Libraries
 
 Special thanks to:
+
 - **Flask** - Web framework
 - **SQLAlchemy** - ORM
 - **Bootstrap** - UI framework
