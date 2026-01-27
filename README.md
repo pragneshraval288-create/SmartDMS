@@ -1,12 +1,15 @@
-# 📄 Smart Python-Powered Document Management and Simplified (SmartDMS)
+# 📄 SmartDMS - Document Management System
 
 <div align="center">
 
+![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=pytest)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
+
+**Smart Python-Powered Document Management and Simplified**
 
 **A secure, role-based document management system built with Python & Flask**
 
@@ -15,9 +18,9 @@
 [Features](#-key-features) •
 [Installation](#-installation--setup) •
 [Testing](#-testing) •
-[Screenshots](#-screenshots) •
+[Team](#-development-team) •
 [Security](#-security-overview) •
-[Team](#-development-team)
+[Contributing](#-contributing)
 
 </div>
 
@@ -40,8 +43,10 @@
 - [Project Structure](#-project-structure)
 - [Troubleshooting](#-troubleshooting)
 - [Future Enhancements](#-future-enhancements)
+- [Contributing](#-contributing)
 - [Disclaimer](#-disclaimer)
 - [Acknowledgements](#-acknowledgements)
+- [License](#-license)
 
 ---
 
@@ -53,7 +58,7 @@
 
 SmartDMS follows industry-standard security practices including:
 
-- 🔐 **Multi-layer encryption for credentials and stored files** for sensitive data
+- 🔐 **Multi-layer encryption** for credentials and stored files
 - 🛡️ **Frontend password encryption** using CryptoJS (AES-256-CBC)
 - 🔓 **Backend decryption** with OpenSSL-compatible key derivation
 - 📁 **File encryption at rest** using Fernet encryption
@@ -84,8 +89,8 @@ SmartDMS follows industry-standard security practices including:
 
 - **Organization**: BISAG-N
 - **Full Name**: Bhaskaracharya National Institute for Space Applications and Geo-informatics
-- **Duration**: 6 Months (Final Month)
-- **Location**: Gujarat, India
+- **Duration**: 6 Months
+- **Location**: Gandhinagar, Gujarat, India
 
 </td>
 </tr>
@@ -105,8 +110,6 @@ SmartDMS follows industry-standard security practices including:
 <tr>
 <td align="center" width="33%">
 
-<img src="https://github.com/identicons/pragnesh.png" width="100" style="border-radius:50%"/>
-
 **Pragnesh Raval**
 
 _Lead Developer_
@@ -125,38 +128,38 @@ _Lead Developer_
 </td>
 <td align="center" width="33%">
 
-<img src="https://github.com/identicons/parth.png" width="100" style="border-radius:50%"/>
-
 **Parth Gadhavi**
 
 _Backend Developer_
 
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pgadhavi309-rgb)
+
 **Responsibilities:**
 
--Document Management Module (Model, Routes, Service)
--Folder Management Module (Model, Routes, Service)
--Recycle Bin & Versioning Module
--Storage & Activity Services
--Testing Suite (pytest)
--API Development
+- Document Management Module (Model, Routes, Service)
+- Folder Management Module (Model, Routes, Service)
+- Recycle Bin & Versioning Module
+- Storage & Activity Services
+- Testing Suite (pytest)
+- API Development
 
 </td>
 <td align="center" width="33%">
-
-<img src="https://github.com/identicons/yash.png" width="100" style="border-radius:50%"/>
 
 **Yash Raval**
 
 _Frontend Developer_
 
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/yashraval766-source)
+
 **Responsibilities:**
 
--UI/UX Design & CSS Architecture (800+ lines)
--All JavaScript Modules (6 modules)
--Share & Collaboration Module
--Comments & Notifications Module
--Base Templates & Components
--Responsive Design Implementation
+- UI/UX Design & CSS Architecture (800+ lines)
+- All JavaScript Modules (6 modules)
+- Share & Collaboration Module
+- Comments & Notifications Module
+- Base Templates & Components
+- Responsive Design Implementation
 
 </td>
 </tr>
@@ -538,11 +541,20 @@ Ensure you have the following installed:
 
 #### 1️⃣ Clone the Repository
 
+Choose the repository based on your role or preference:
+
 ```bash
+# Lead Developer Repository (Recommended - Main Project)
 git clone https://github.com/pragneshraval288-create/SmartDMS.git
-git clone https://github.com/pgadhavi309-rgb/DMS-Project.git
-git clone https://github.com/yashraval766-source/Smart_DMS.git
 cd SmartDMS
+
+# Alternative: Backend Developer Repository
+# git clone https://github.com/pgadhavi309-rgb/DMS-Project.git
+# cd DMS-Project
+
+# Alternative: Frontend Developer Repository
+# git clone https://github.com/yashraval766-source/Smart_DMS.git
+# cd Smart_DMS
 ```
 
 #### 2️⃣ Create Virtual Environment
@@ -699,7 +711,7 @@ tests/test_folders.py .....                                    [100%]
 
 ### 🔐 Login Page
 
-![Login Page](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Login.png)
+![Login Page](frontend/static/screenshots/Login.png)
 
 _Secure authentication with frontend AES-256 encryption_
 
@@ -707,7 +719,7 @@ _Secure authentication with frontend AES-256 encryption_
 
 ### 📊 Dashboard
 
-![Dashboard](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Dashboard.png)
+![Dashboard](frontend/static/screenshots/Dashboard.png)
 
 _Analytics dashboard with charts and system monitoring_
 
@@ -715,7 +727,7 @@ _Analytics dashboard with charts and system monitoring_
 
 ### 📋 Document Management
 
-![Documents](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/documents.png)
+![Documents](frontend/static/screenshots/documents.png)
 
 _Comprehensive document and folder management_
 
@@ -723,7 +735,7 @@ _Comprehensive document and folder management_
 
 ### 📤 Upload Interface
 
-![Upload](https://github.com/pragneshraval288-create/SmartDMS/blob/main/frontend/static/screenshots/Upload.png)
+![Upload](frontend/static/screenshots/Upload.png)
 
 _Secure document upload with encryption_
 
@@ -951,6 +963,14 @@ SmartDMS/
 - Kill process using port 5000
 - Restart system
 
+#### Screenshots Not Loading
+
+**Solutions:**
+
+- Ensure screenshots are in `frontend/static/screenshots/`
+- Check file names match exactly (case-sensitive)
+- Verify image files are committed to repository
+
 ---
 
 ## 🚀 Future Enhancements
@@ -970,6 +990,67 @@ SmartDMS/
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions from the community! Whether it's bug fixes, feature additions, or documentation improvements, your help is appreciated.
+
+### How to Contribute
+
+1. **Fork the repository**
+   ```bash
+   # Click the 'Fork' button on GitHub
+   ```
+
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/SmartDMS.git
+   cd SmartDMS
+   ```
+
+3. **Create a feature branch**
+   ```bash
+   git checkout -b feature/AmazingFeature
+   ```
+
+4. **Make your changes**
+   - Write clean, readable code
+   - Follow existing code style
+   - Add tests if applicable
+
+5. **Commit your changes**
+   ```bash
+   git commit -m 'Add some AmazingFeature'
+   ```
+
+6. **Push to your fork**
+   ```bash
+   git push origin feature/AmazingFeature
+   ```
+
+7. **Open a Pull Request**
+   - Go to the original repository
+   - Click 'New Pull Request'
+   - Describe your changes
+
+### Development Guidelines
+
+- **Code Style**: Follow PEP 8 for Python code
+- **Testing**: Write tests for new features
+- **Documentation**: Update README and inline comments
+- **Commits**: Use clear, descriptive commit messages
+- **Issues**: Check existing issues before creating new ones
+
+### Areas for Contribution
+
+- 🐛 Bug fixes
+- ✨ New features
+- 📝 Documentation improvements
+- 🎨 UI/UX enhancements
+- 🧪 Test coverage improvements
+- 🔒 Security enhancements
+
+---
+
 ## ⚠️ Disclaimer
 
 > **Educational & Internship Project**
@@ -982,6 +1063,8 @@ SmartDMS/
 > - ✅ Scalability improvements
 >
 > **before production deployment.**
+>
+> The developers are not responsible for any misuse or security vulnerabilities if deployed in production environments without proper security review.
 
 ---
 
@@ -1012,7 +1095,7 @@ SmartDMS/
 
 ### 🛠️ Technologies & Libraries
 
-Special thanks to:
+Special thanks to the maintainers and contributors of:
 
 - **Flask** - Web framework
 - **SQLAlchemy** - ORM
@@ -1020,6 +1103,17 @@ Special thanks to:
 - **Chart.js** - Data visualization
 - **CryptoJS** - Client-side encryption
 - **pytest** - Testing framework
+- **MySQL** - Database system
+
+---
+
+## 📄 License
+
+This project is developed for **educational purposes** as part of:
+- **BCA Final Year Project** at College of Computer Management Studies, Vadu
+- **BISAG-N Internship Project** 
+
+All rights reserved by the development team. For commercial use or redistribution, please contact the team members.
 
 ---
 
@@ -1029,23 +1123,64 @@ Special thanks to:
 
 If you found this project helpful, please consider giving it a star!
 
+[![GitHub stars](https://img.shields.io/github/stars/pragneshraval288-create/SmartDMS?style=social)](https://github.com/pragneshraval288-create/SmartDMS/stargazers)
+
 ---
 
 ### 📞 Contact
 
-**Lead Developer:** Pragnesh Raval
+<table>
+<tr>
+<td align="center" width="33%">
 
-**Project Repository:** [github.com/pragneshraval288-create/SmartDMS](https://github.com/pragneshraval288-create/SmartDMS)
+**Pragnesh Raval**
 
-**Backend Developer:** Parth Gadhavi
+_Lead Developer_
 
-**Project Repository:** [github.com/pgadhavi309-rgb/DMS-Project](https://github.com/pgadhavi309-rgb/DMS-Project)
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pragneshraval288-create)
 
-**Frontend Developer:** Yash Raval
+📧 pragneshraval288@gmail.com
 
-**Project Repository:** [github.com/yashraval766-source/Smart_DMS](https://github.com/yashraval766-source/Smart_DMS)
+</td>
+<td align="center" width="33%">
+
+**Parth Gadhavi**
+
+_Backend Developer_
+
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pgadhavi309-rgb)
+
+📧 pgadhavi309@gmail.com
+
+</td>
+<td align="center" width="33%">
+
+**Yash Raval**
+
+_Frontend Developer_
+
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/yashraval766-source)
+
+📧 yashraval766@gmail.com
+
+</td>
+</tr>
+</table>
+
 ---
 
-### 📄 License
+### 🔗 Project Links
 
-This project is developed for **educational purposes** as part of BCA Final Year Project and BISAG-N
+**Main Repository:** [github.com/pragneshraval288-create/SmartDMS](https://github.com/pragneshraval288-create/SmartDMS)
+
+**Backend Repository:** [github.com/pgadhavi309-rgb/DMS-Project](https://github.com/pgadhavi309-rgb/DMS-Project)
+
+**Frontend Repository:** [github.com/yashraval766-source/Smart_DMS](https://github.com/yashraval766-source/Smart_DMS)
+
+---
+
+**Made with ❤️ by Team SmartDMS**
+
+**© 2024-2025 SmartDMS Development Team. All Rights Reserved.**
+
+</div>
