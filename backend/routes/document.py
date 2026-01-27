@@ -22,13 +22,15 @@ from ..forms import (
 
 from ..services.document_service import (
     create_document, update_document_file,
-    soft_archive, restore, increment_download
+    soft_archive, restore, increment_download,
+    InvalidFileTypeError  # 🔥 IMPORT
 )
 from ..services.activity_service import log_activity
 from ..services.notification_service import notify_user
 from ..services.storage_service import decrypt_file, save_encrypted_file
 
 document_bp = Blueprint("document", __name__, url_prefix="/documents")
+
 
 # =========================
 # HELPERS
@@ -196,24 +198,40 @@ def upload():
             flash("Title and file required.", "danger")
             return redirect(request.url)
 
-        for i, file in enumerate(files):
-            if not file or file.filename == "":
-                continue
+        try:
+            for i, file in enumerate(files):
+                if not file or file.filename == "":
+                    continue
 
-            doc_title = title if i == 0 else f"{title} ({i + 1})"
-            create_document(
-                user=current_user,
-                title=doc_title,
-                tags=tags,
-                file_storage=file,
-                folder_id=folder_id,
-                status="uploaded"
-            )
+                doc_title = title if i == 0 else f"{title} ({i + 1})"
+                create_document(
+                    user=current_user,
+                    title=doc_title,
+                    tags=tags,
+                    file_storage=file,
+                    folder_id=folder_id,
+                    status="uploaded"
+                )
+
+        except InvalidFileTypeError as e:
+            flash(str(e), "danger")
+            return redirect(request.url)
+
+        except Exception:
+            flash("Unexpected error while uploading file.", "danger")
+            return redirect(request.url)
 
         flash("Documents uploaded successfully.", "success")
-        return redirect(url_for("document.list_documents", folder=folder_id) if folder_id else url_for("document.list_documents"))
+        return redirect(
+            url_for("document.list_documents", folder=folder_id)
+            if folder_id else url_for("document.list_documents")
+        )
 
-    return render_template("documents/upload.html", form=UploadForm(), active_folder=active_folder_id)
+    return render_template(
+        "documents/upload.html",
+        form=UploadForm(),
+        active_folder=active_folder_id
+    )
 
 
 # =========================
@@ -403,10 +421,19 @@ def update_file(document_id):
         flash("Please choose a file.", "danger")
         return redirect(url_for("document.detail", document_id=document_id))
 
-    update_document_file(doc, file)
+    try:
+        update_document_file(doc, file)
+
+    except InvalidFileTypeError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("document.detail", document_id=document_id))
+
+    except Exception:
+        flash("Unexpected error while updating file.", "danger")
+        return redirect(url_for("document.detail", document_id=document_id))
+
     flash("New version uploaded.", "success")
     return redirect(url_for("document.detail", document_id=document_id))
-
 # =========================
 # ARCHIVE / RESTORE
 # =========================

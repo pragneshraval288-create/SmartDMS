@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+
 from ..extensions import db
 from ..models import User, ActivityLog
 
@@ -7,7 +8,7 @@ approvals_bp = Blueprint("approvals", __name__, url_prefix="/approvals")
 
 
 # ======================================================
-# USER APPROVALS ONLY
+# USER APPROVALS LIST
 # ======================================================
 @approvals_bp.route("/")
 @login_required
@@ -16,6 +17,7 @@ def index():
         flash("You do not have permission to view this page.", "danger")
         return redirect(url_for("dashboard.index"))
 
+    # Only users waiting for approval
     users = (
         User.query
         .filter_by(is_approved=False)
@@ -59,7 +61,7 @@ def approve_user(user_id):
 
 
 # ======================================================
-# USER REJECT
+# USER REJECT (PERMANENT)
 # ======================================================
 @approvals_bp.route("/user/<int:user_id>/reject", methods=["POST"])
 @login_required
@@ -69,10 +71,9 @@ def reject_user(user_id):
         return redirect(url_for("approvals.index"))
 
     user = User.query.get_or_404(user_id)
+    username = user.username
 
-    user.is_active = False
-    user.is_approved = False
-
+    # Log activity BEFORE delete
     db.session.add(
         ActivityLog(
             action="user_rejected",
@@ -81,7 +82,9 @@ def reject_user(user_id):
         )
     )
 
+    # 🔥 REAL REJECT = DELETE USER
+    db.session.delete(user)
     db.session.commit()
 
-    flash(f"User '{user.username}' rejected.", "warning")
+    flash(f"User '{username}' rejected and removed.", "warning")
     return redirect(url_for("approvals.index"))

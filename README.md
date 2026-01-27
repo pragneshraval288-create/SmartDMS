@@ -1,4 +1,4 @@
-# 📄 Smart Python-Powered Document Management System (SmartDMS)
+# 📄 Smart Python-Powered Document Management and Simplified (SmartDMS)
 
 <div align="center">
 
@@ -540,6 +540,8 @@ Ensure you have the following installed:
 
 ```bash
 git clone https://github.com/pragneshraval288-create/SmartDMS.git
+git clone https://github.com/pgadhavi309-rgb/DMS-Project.git
+git clone https://github.com/yashraval766-source/Smart_DMS.git
 cd SmartDMS
 ```
 
@@ -1031,10 +1033,17 @@ If you found this project helpful, please consider giving it a star!
 
 ### 📞 Contact
 
-**Project Repository:** [github.com/pragneshraval288-create/SmartDMS](https://github.com/pragneshraval288-create/SmartDMS)
-
 **Lead Developer:** Pragnesh Raval
 
+**Project Repository:** [github.com/pragneshraval288-create/SmartDMS](https://github.com/pragneshraval288-create/SmartDMS)
+
+**Backend Developer:** Parth Gadhavi
+
+**Project Repository:** [github.com/pgadhavi309-rgb/DMS-Project](https://github.com/pgadhavi309-rgb/DMS-Project)
+
+**Frontend Developer:** Yash Raval
+
+**Project Repository:** [github.com/yashraval766-source/Smart_DMS](https://github.com/yashraval766-source/Smart_DMS)
 ---
 
 ### 📄 License

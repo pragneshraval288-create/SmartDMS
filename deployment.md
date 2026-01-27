@@ -1,6 +1,6 @@
 # 🚀 SmartDMS - Complete Deployment Guide
 
-**Smart Python-Powered Document Management System**
+**Smart Python-Powered Documents Management and Simplified**
 
 A comprehensive guide for development setup, testing, and production deployment.
 

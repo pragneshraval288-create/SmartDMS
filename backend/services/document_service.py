@@ -10,6 +10,39 @@ from .notification_service import notify_user
 
 
 # ======================================================
+# CONFIG: ALLOWED FILE TYPES
+# ======================================================
+ALLOWED_EXTENSIONS = {
+    "pdf", "doc", "docx", "xls", "xlsx",
+    "ppt", "pptx",
+    "txt", "csv",
+    "jpg", "jpeg", "png"
+}
+
+
+# ======================================================
+# CUSTOM EXCEPTION (CONTROLLED)
+# ======================================================
+class InvalidFileTypeError(Exception):
+    pass
+
+
+def _validate_file(file_storage: FileStorage):
+    if not file_storage or not file_storage.filename:
+        raise InvalidFileTypeError("No file selected")
+
+    _, ext = os.path.splitext(file_storage.filename)
+    ext = ext.replace(".", "").lower()
+
+    if ext not in ALLOWED_EXTENSIONS:
+        raise InvalidFileTypeError(
+            f"File type '.{ext}' is not allowed"
+        )
+
+    return ext
+
+
+# ======================================================
 # CREATE DOCUMENT (FOLDER-AWARE)
 # ======================================================
 def create_document(
@@ -18,15 +51,17 @@ def create_document(
     tags: str | None,
     file_storage: FileStorage,
     folder_id: int | None = None,
-    status: str = "uploaded",   # 🔥 FIX: default status
+    status: str = "uploaded",
 ) -> Document:
 
     # ------------------------------
-    # FILE EXTENSION
+    # FILE VALIDATION
     # ------------------------------
-    _, ext = os.path.splitext(file_storage.filename)
-    ext = ext.replace(".", "").lower()
+    ext = _validate_file(file_storage)
 
+    # ------------------------------
+    # SAVE FILE
+    # ------------------------------
     stored_path, stored_name = save_encrypted_file(file_storage)
 
     # ------------------------------
@@ -43,15 +78,15 @@ def create_document(
         folder_id=folder_id,
         version=1,
         is_active=True,
-        status=status,                 # 🔥 FIX APPLIED HERE
+        status=status,
         created_at=datetime.utcnow(),
     )
 
     db.session.add(doc)
-    db.session.flush()  # 🔥 get doc.id safely
+    db.session.flush()
 
     # ------------------------------
-    # VERSION ROW (v1)
+    # VERSION ROW
     # ------------------------------
     version_row = DocumentVersion(
         document_id=doc.id,
@@ -88,14 +123,16 @@ def update_document_file(
     file_storage: FileStorage
 ) -> Document:
 
+    # ------------------------------
+    # FILE VALIDATION
+    # ------------------------------
+    ext = _validate_file(file_storage)
+
     new_version = (doc.version or 1) + 1
 
     # ------------------------------
-    # FILE EXTENSION
+    # SAVE FILE
     # ------------------------------
-    _, ext = os.path.splitext(file_storage.filename)
-    ext = ext.replace(".", "").lower()
-
     stored_path, stored_name = save_encrypted_file(
         file_storage,
         version_suffix=f"_v{new_version}"
