@@ -112,7 +112,7 @@ SmartDMS follows industry-standard security practices including:
 
 **Pragnesh Raval**
 
-_Lead Developer_
+_Full Stack Developer_
 
 [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pragneshraval288-create)
 
@@ -164,14 +164,6 @@ _Frontend Developer_
 </td>
 </tr>
 </table>
-
----
-
-## ✨ Key Features
-
-<table>
-<tr>
-<td width="50%">
 
 ### 🔐 Security Features
 
@@ -1135,7 +1127,7 @@ If you found this project helpful, please consider giving it a star!
 
 **Pragnesh Raval**
 
-_Lead Developer_
+_Full Stack Developer_
 
 [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github)](https://github.com/pragneshraval288-create)
 
